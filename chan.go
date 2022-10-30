@@ -1,8 +1,8 @@
 package structx
 
-type Chan[T Value] chan T
+type Chan[T AnyValue] chan T
 
-func NewChan[T Value](size ...int) *Chan[T] {
+func NewChan[T AnyValue](size ...int) *Chan[T] {
 	if len(size) > 0 {
 		ch := make(Chan[T], size[0])
 		return &ch

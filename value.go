@@ -19,7 +19,3 @@ type Int interface {
 type Float interface {
 	float64 | float32
 }
-
-type Addable interface {
-	Int | Float
-}

@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type Pool[T Value] struct {
+type Pool[T AnyValue] struct {
 	work chan Task[T]
 	sem  chan struct{} // limit goroutine
 	wg   sync.WaitGroup
 }
 
-type Task[T Value] struct {
+type Task[T AnyValue] struct {
 	work   func(...T)
 	params []T
 }
 
 // NewPool: Return new pool
-func NewPool[T Value](size ...int) *Pool[T] {
+func NewPool[T AnyValue](size ...int) *Pool[T] {
 	// default
 	num := runtime.NumCPU() / 2
 	if len(size) > 0 {
