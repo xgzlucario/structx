@@ -1,7 +1,7 @@
 package test
 
 import (
-	"structx"
+	"github.com/xgzlucario/structx"
 	"testing"
 )
 

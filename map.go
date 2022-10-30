@@ -1,8 +1,9 @@
 package structx
 
 import (
-	"structx/base"
 	"sync"
+
+	"github.com/xgzlucario/structx/base"
 )
 
 type Map[T base.Value] map[T]T

@@ -1,6 +1,6 @@
 package structx
 
-import "structx/base"
+import "github.com/xgzlucario/structx/base"
 
 type List[T base.Value] struct {
 	base.Values[T]
