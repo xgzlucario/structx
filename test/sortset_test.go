@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/xgzlucario/structx"
@@ -8,29 +9,26 @@ import (
 
 func Benchmark_SortSet1(b *testing.B) {
 	ss := structx.NewSortSet[string, int]()
-	ss.Incr("a1", 3)
-	ss.Print()
-	ss.Incr("a2", 8)
-	ss.Print()
-	ss.Incr("a3", 5)
-	ss.Print()
-	ss.Incr("a1", 10)
-	ss.Print()
-}
-
-func Benchmark_SortSet2(b *testing.B) {
-	ls := structx.NewList[int]()
 	for i := 0; i < b.N; i++ {
-		ls.RPush(i)
+		ss.Incr(fmt.Sprintf("%d", i%100), i)
 	}
 }
 
-// func Benchmark3(b *testing.B) {
-// 	l1 := util.NewListx[int]()
+func Benchmark_SortSet2(b *testing.B) {
+	ss := structx.NewSortSet[string, int]()
+	for i := 0; i < b.N; i++ {
+		ss.Incr(fmt.Sprintf("%d", i%100), i)
+	}
+}
 
-// 	for i := 0; i < 16; i++ {
-// 		fmt.Println(l1)
-// 		l1.RPush(i + 1)
-// 	}
-// 	fmt.Println(l1)
+// func Benchmark_SortSet3(b *testing.B) {
+// 	ss := structx.NewSortSet[string, int]()
+// 	ss.Incr("a1", 3)
+// 	ss.Print()
+// 	ss.Incr("a2", 8)
+// 	ss.Print()
+// 	ss.Incr("a3", 5)
+// 	ss.Print()
+// 	ss.Incr("a1", 10)
+// 	ss.Print()
 // }
