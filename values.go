@@ -38,10 +38,10 @@ func (s Values[T]) Bottom(i int) {
 	}
 }
 
-// Index: return the first index of elem
-func (s Values[T]) Index(value T) int {
-	for i, v := range s {
-		if v == value {
+// Index: return the first index of element
+func (this Values[T]) Index(elem T) int {
+	for i, v := range this {
+		if v == elem {
 			return i
 		}
 	}
@@ -66,8 +66,14 @@ func (s Values[T]) Move(old, new int) {
 }
 
 // Filter: Filter Values of array
-func (s Values[T]) Filter(func(elem T) bool) {
-	// TODO
+func (this Values[T]) Filter(f func(elem T) bool) Values[T] {
+	newArr := make(Values[T], 0, MAKE_SIZE)
+	for _, s := range this {
+		if f(s) {
+			newArr = append(newArr, s)
+		}
+	}
+	return newArr
 }
 
 func (s Values[T]) Reverse() {

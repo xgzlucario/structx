@@ -1,20 +1,27 @@
 package structx
 
+const MAKE_SIZE = 8
+
 type List[T Value] struct {
 	Values[T]
 }
 
 // NewList: return new List
-func NewList[T Value]() *List[T] {
+func NewList[T Value](values ...T) *List[T] {
+	if len(values) > 0 {
+		return &List[T]{
+			Values: values,
+		}
+	}
 	return &List[T]{
-		Values: make([]T, 0, 16),
+		Values: make([]T, 0, MAKE_SIZE),
 	}
 }
 
 // AddToSet: add to the set
 func (ls *List[T]) AddToSet(value T) bool {
 	if ls.Index(value) < 0 {
-		ls.Values = append(ls.Values, value)
+		ls.RPush(value)
 		return true
 	}
 	return false
@@ -40,7 +47,7 @@ func (ls *List[T]) RPop() T {
 	return val
 }
 
-// Remove: remove value from list
+// Remove: remove first value from list
 func (ls *List[T]) Remove(value T) bool {
 	if i := ls.Index(value); i > 0 {
 		ls.Values = append(ls.Values[:i], ls.Values[i+1:]...)
