@@ -1,6 +1,8 @@
 package structx
 
-type Node[T Value] struct {
+import "structx/base"
+
+type Node[T base.Value] struct {
 	Pre  *Node[T]
 	Next *Node[T]
 	Val  T

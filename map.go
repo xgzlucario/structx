@@ -1,11 +1,14 @@
 package structx
 
-import "sync"
+import (
+	"structx/base"
+	"sync"
+)
 
-type Map[T Value] map[T]T
+type Map[T base.Value] map[T]T
 
 // The same as sync.Map
-type SyncMap[T Value] struct {
+type SyncMap[T base.Value] struct {
 	sync.RWMutex
 	Map[T]
 }
