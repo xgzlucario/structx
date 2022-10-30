@@ -1,13 +1,11 @@
 package structx
 
-import "github.com/xgzlucario/structx/base"
-
-type List[T base.Value] struct {
-	base.Values[T]
+type List[T Value] struct {
+	Values[T]
 }
 
 // NewList: return new List
-func NewList[T base.Value]() *List[T] {
+func NewList[T Value]() *List[T] {
 	return &List[T]{
 		Values: make([]T, 0, 16),
 	}

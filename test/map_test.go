@@ -1,24 +1,23 @@
 package test
 
 import (
-	"github.com/xgzlucario/structx"
+	"strconv"
 	"testing"
+
+	"github.com/xgzlucario/structx"
 )
 
-func Benchmark1(b *testing.B) {
-	l1 := structx.NewList[int]()
+func Benchmark_Map1(b *testing.B) {
+	ls := make(map[string]int)
 	for i := 0; i < b.N; i++ {
-		if i%10 == 0 {
-			l1 = structx.NewList[int]()
-		}
-		l1.RPush(i)
+		ls[strconv.Itoa(i)] = i
 	}
 }
 
-func Benchmark2(b *testing.B) {
-	l1 := structx.NewList[int]()
+func Benchmark_Map2(b *testing.B) {
+	ls := structx.NewMap[string, int]()
 	for i := 0; i < b.N; i++ {
-		l1.RPush(i)
+		ls[strconv.Itoa(i)] = i
 	}
 }
 

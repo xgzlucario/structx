@@ -1,4 +1,4 @@
-package base
+package structx
 
 import (
 	"fmt"
@@ -62,6 +62,11 @@ func (s Values[T]) RShift() {
 
 // Move: Move an element to any position
 func (s Values[T]) Move(old, new int) {
+	// TODO
+}
+
+// Filter: Filter Values of array
+func (s Values[T]) Filter(func(elem T) bool) {
 	// TODO
 }
 

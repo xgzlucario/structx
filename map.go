@@ -2,37 +2,45 @@ package structx
 
 import (
 	"sync"
-
-	"github.com/xgzlucario/structx/base"
 )
 
-type Map[T base.Value] map[T]T
+type Map[KEY, VALUE Value] map[KEY]VALUE
 
 // The same as sync.Map
-type SyncMap[T base.Value] struct {
+type SyncMap[K, V Value] struct {
 	sync.RWMutex
-	Map[T]
+	Map[K, V]
 }
 
-func (m *SyncMap[T]) Store(key, value T) {
+func NewMap[K, V Value]() Map[K, V] {
+	return make(Map[K, V], 16)
+}
+
+func NewSyncMap[K, V Value]() *SyncMap[K, V] {
+	return &SyncMap[K, V]{
+		Map: NewMap[K, V](),
+	}
+}
+
+func (m *SyncMap[K, V]) Store(k K, v V) {
 	m.Lock()
 	defer m.Unlock()
-	m.Map[key] = value
+	m.Map[k] = v
 }
 
-func (m *SyncMap[T]) Load(key T) T {
+func (m *SyncMap[K, V]) Load(k K) V {
 	m.RLock()
 	defer m.RUnlock()
-	return m.Map[key]
+	return m.Map[k]
 }
 
-func (m *SyncMap[T]) Delete(key T) {
+func (m *SyncMap[K, V]) Delete(key K) {
 	m.Lock()
 	defer m.Unlock()
 	delete(m.Map, key)
 }
 
-func (m *SyncMap[T]) Range(f func(k, v T)) {
+func (m *SyncMap[K, V]) Range(f func(k K, v V)) {
 	m.RLock()
 	defer m.RUnlock()
 	for k, v := range m.Map {
@@ -40,6 +48,6 @@ func (m *SyncMap[T]) Range(f func(k, v T)) {
 	}
 }
 
-func (m *SyncMap[T]) Len(key T) int {
+func (m *SyncMap[K, V]) Len(key K) int {
 	return len(m.Map)
 }
