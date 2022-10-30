@@ -15,9 +15,9 @@ func Benchmark_Map1(b *testing.B) {
 }
 
 func Benchmark_Map2(b *testing.B) {
-	ls := structx.NewMap[string, int]()
+	ls := structx.NewSyncMap[string, int]()
 	for i := 0; i < b.N; i++ {
-		ls[strconv.Itoa(i)] = i
+		ls.Store(strconv.Itoa(i), i)
 	}
 }
 
