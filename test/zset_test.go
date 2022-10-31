@@ -1,23 +1,23 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/liyiheng/zset"
 	"github.com/xgzlucario/structx"
 )
 
 func Benchmark_ZSet1(b *testing.B) {
-	ss := structx.NewZSet[int, int]()
+	s := structx.New()
 	for i := 0; i < b.N; i++ {
-		ss.Incr(i%100, i)
+		s.IncrBy(1, int64(i%1000))
 	}
 }
 
 func Benchmark_ZSet2(b *testing.B) {
-	ss := structx.NewZSet[string, int]()
+	s := zset.New()
 	for i := 0; i < b.N; i++ {
-		ss.Incr(fmt.Sprintf("%d", i%100), i)
+		s.IncrBy(1, int64(i%1000))
 	}
 }
 

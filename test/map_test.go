@@ -1,32 +1,21 @@
 package test
 
 import (
-	"strconv"
 	"testing"
 
-	"github.com/xgzlucario/structx"
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 func Benchmark_Map1(b *testing.B) {
-	ls := make(map[string]int)
+	ls := make(map[int]struct{})
 	for i := 0; i < b.N; i++ {
-		ls[strconv.Itoa(i)] = i
+		ls[i] = struct{}{}
 	}
 }
 
 func Benchmark_Map2(b *testing.B) {
-	ls := structx.NewSyncMap[string, int]()
+	s := mapset.NewSet[int]()
 	for i := 0; i < b.N; i++ {
-		ls.Store(strconv.Itoa(i), i)
+		s.Add(i)
 	}
 }
-
-// func Benchmark3(b *testing.B) {
-// 	l1 := util.NewListx[int]()
-
-// 	for i := 0; i < 16; i++ {
-// 		fmt.Println(l1)
-// 		l1.RPush(i + 1)
-// 	}
-// 	fmt.Println(l1)
-// }
