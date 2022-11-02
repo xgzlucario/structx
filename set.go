@@ -30,7 +30,7 @@ func (s Set[T]) Remove(key T) bool {
 		s.m.Delete(key)
 		// remove list
 		i := s.ls.Index(key)
-		s.ls.Swap(i, s.ls.Len()-1)
+		s.ls.Bottom(i)
 		s.ls.RPop()
 		return true
 	}
