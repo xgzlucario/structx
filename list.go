@@ -14,7 +14,7 @@ func NewList[T Value](values ...T) *List[T] {
 		}
 	}
 	return &List[T]{
-		Values: make([]T, 0, MAKE_SIZE),
+		Values: make(Values[T], MAKE_SIZE),
 	}
 }
 
@@ -41,17 +41,12 @@ func (ls *List[T]) LPop() T {
 	return ls.RPop()
 }
 
+func (ls *List[T]) Set(index int, value T) {
+	ls.Values[index] = value
+}
+
 func (ls *List[T]) RPop() T {
 	val := ls.Values[ls.Len()-1]
 	ls.Values = ls.Values[:ls.Len()-1]
 	return val
-}
-
-// Remove: remove first value from list
-func (ls *List[T]) Remove(value T) bool {
-	if i := ls.Index(value); i > 0 {
-		ls.Values = append(ls.Values[:i], ls.Values[i+1:]...)
-		return true
-	}
-	return false
 }

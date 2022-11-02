@@ -65,17 +65,6 @@ func (s Values[T]) Move(old, new int) {
 	// TODO
 }
 
-// Filter: Filter Values of array
-func (this Values[T]) Filter(f func(elem T) bool) Values[T] {
-	newArr := make(Values[T], 0, MAKE_SIZE)
-	for _, s := range this {
-		if f(s) {
-			newArr = append(newArr, s)
-		}
-	}
-	return newArr
-}
-
 func (s Values[T]) Reverse() {
 	l, r := 0, s.Len()-1
 	for l < r {
@@ -103,6 +92,14 @@ func (this Values[T]) Min() T {
 		}
 	}
 	return min
+}
+
+func (this Values[T]) Range(f func(T) bool) {
+	for _, s := range this {
+		if f(s) {
+			return
+		}
+	}
 }
 
 func (this Values[T]) Print() {
