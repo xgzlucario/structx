@@ -1,6 +1,6 @@
 package structx
 
-// Set: map + list
+// Set: map + list (not thread safe)
 type Set[T Value] struct {
 	m  Map[T, struct{}]
 	ls *List[T]
@@ -53,9 +53,21 @@ func (s *Set[T]) Union(t Set[T]) {
 	})
 }
 
+func (s *Set[T]) Copy(dst *Set[T]) {
+	// copy list
+	copy(dst.ls.Values, s.ls.Values)
+	// copy map
+	s.m.Range(func(k T, v struct{}) bool {
+		dst.m.Store(k, v)
+		return false
+	})
+}
+
 func (s *Set[T]) Intersection(t Set[T]) {
 	t.Range(func(k T) bool {
-		s.Add(k)
+		if !s.Exist(k) {
+			s.Remove(k)
+		}
 		return false
 	})
 }
@@ -64,6 +76,10 @@ func (s *Set[T]) Sort() {
 	s.ls.Sort()
 }
 
-func (s *Set[T]) All() Values[T] {
+func (s *Set[T]) Reverse() {
+	s.ls.Reverse()
+}
+
+func (s *Set[T]) Values() Values[T] {
 	return s.ls.Values
 }
