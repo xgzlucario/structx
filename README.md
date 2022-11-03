@@ -2,7 +2,7 @@
 
 Data structures and algorithms implemented using generics.
 
-Currently, structx provides the following types of data structures to support generic types：**List**, **Map**,  **SyncMap*,*** **ZSet**(SortedSet), **LSet**(ListSet).
+Currently, structx provides the following types of data structures to support generic types：**List**, **Map**,  **SyncMap**, **ZSet** (SortedSet), **LSet** (ListSet).
 
 ### LSet
 
@@ -28,9 +28,9 @@ unionRes := s.Union(newS) // (0,1,2,3)
 intersectRes := s.Intersect(newS) // (1,2)
 ```
 
-#### **benchmark**
+#### **Benchmark**
 
-Compare with mapset [(deckarep/golang-set)](https://github.com/deckarep/golang-set), **mapsize is 1000**.
+Compare with mapset [deckarep/golang-set](https://github.com/deckarep/golang-set), **mapsize is 1000**.
 
 ```
 goos: linux
