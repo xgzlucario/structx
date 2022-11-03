@@ -75,18 +75,18 @@ func (s *LSet[T]) Copy() *LSet[T] {
 // Union
 func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
-	// copy minimal lset
-	min = min.Copy()
-	max.Range(func(k T) {
-		min.Add(k)
+	// should copy max lset
+	max = max.Copy()
+	min.Range(func(k T) {
+		max.Add(k)
 	})
-	return min
+	return max
 }
 
 // Intersect
 func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
-	// copy minimal lset
+	// should copy min lset
 	min = min.Copy()
 	min.Range(func(k T) {
 		if !max.Exist(k) {
@@ -99,7 +99,7 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 // Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
-	// copy minimal lset
+	// should copy min lset
 	min = min.Copy()
 	max.Range(func(k T) {
 		if min.Exist(k) {
