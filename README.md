@@ -53,5 +53,7 @@ Benchmark_MapSetUnion-16           12676	    94480 ns/op	    47874 B/op	     68 
 Benchmark_LSetUnion-16             31516	    38181 ns/op	    30181 B/op	     10 allocs/op
 Benchmark_MapSetIntersect-16       14566	    82046 ns/op	    47878 B/op	     68 allocs/op
 Benchmark_LSetIntersect-16         37855	    31650 ns/op	    30181 B/op	     10 allocs/op
+Benchmark_MapSetDiff-16            30876	    38927 ns/op	     8059 B/op	   1002 allocs/op
+Benchmark_LSetDiff-16          	   92643	    12866 ns/op	      153 B/op	      4 allocs/op
 ```
 

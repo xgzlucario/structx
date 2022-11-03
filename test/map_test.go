@@ -103,3 +103,20 @@ func Benchmark_LSetIntersect(b *testing.B) {
 		s1.Intersect(s2)
 	}
 }
+
+// ============ Difference ============
+func Benchmark_MapSetDiff(b *testing.B) {
+	s1 := getMapSet()
+	s2 := getMapSet()
+	for i := 0; i < b.N; i++ {
+		s1.Difference(s2)
+	}
+}
+
+func Benchmark_LSetDiff(b *testing.B) {
+	s1 := getListSet()
+	s2 := getListSet()
+	for i := 0; i < b.N; i++ {
+		s1.Difference(s2)
+	}
+}

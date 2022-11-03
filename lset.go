@@ -98,17 +98,18 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 
 // Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
-	min, max := compareTwoLSet(this, t)
-	// should copy min lset
-	min = min.Copy()
-	max.Range(func(k T) {
-		if min.Exist(k) {
-			min.remove(k)
-		} else {
-			min.add(k)
+	newSet := NewLSet[T]()
+	this.Range(func(k T) {
+		if !t.Exist(k) {
+			newSet.add(k)
 		}
 	})
-	return min
+	t.Range(func(k T) {
+		if !this.Exist(k) {
+			newSet.add(k)
+		}
+	})
+	return newSet
 }
 
 func (s *LSet[T]) Sort() {
