@@ -13,14 +13,14 @@ type LSet[T Value] struct {
 }
 
 func NewLSet[T Value](values ...T) *LSet[T] {
-	// make map
-	m := make(Map[T, struct{}], len(values))
+	ls := &LSet[T]{
+		m:  NewMap[T, struct{}](),
+		ls: NewList[T](),
+	}
 	for _, v := range values {
-		m.Store(v, struct{}{})
+		ls.Add(v)
 	}
-	return &LSet[T]{
-		m: m, ls: NewList(values...),
-	}
+	return ls
 }
 
 // Add

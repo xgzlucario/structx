@@ -10,7 +10,7 @@ import (
 const SUM = 1000
 
 func getMapSet() mapset.Set[int] {
-	s := mapset.NewThreadUnsafeSet[int]()
+	s := mapset.NewSet[int]()
 	for i := 0; i < SUM; i++ {
 		s.Add(i)
 	}
