@@ -124,6 +124,14 @@ func (s *LSet[T]) Len() int {
 	return s.ls.Len()
 }
 
+func (s *LSet[T]) Min() T {
+	return s.ls.Min()
+}
+
+func (s *LSet[T]) Max() T {
+	return s.ls.Max()
+}
+
 func (s *LSet[T]) Values() Values[T] {
 	return s.ls.Values
 }

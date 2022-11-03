@@ -96,5 +96,5 @@ func (this Values[T]) Min() T {
 }
 
 func (this Values[T]) Print() {
-	fmt.Printf("values: %v\n", this)
+	fmt.Println("values:", this)
 }

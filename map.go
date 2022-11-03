@@ -24,6 +24,6 @@ func (m Map[K, V]) Range(f func(k K, v V)) {
 	}
 }
 
-func (m Map[K, V]) Len(key K) int {
+func (m Map[K, V]) Len() int {
 	return len(m)
 }

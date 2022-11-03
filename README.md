@@ -24,6 +24,11 @@ for i := 0;i < 4;i++ {
 
 s.Remove(3) // (0,1,2)
 s.Add(1) // (0,1,2)
+s.Max() // 2
+
+s.Reverse() // (2,1,0)
+s.Sort() // (0,1,2)
+
 s.Range(func(k int) {
     // do something...
 })

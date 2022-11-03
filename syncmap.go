@@ -32,16 +32,14 @@ func (m *SyncMap[K, V]) Delete(key K) {
 	delete(m.m, key)
 }
 
-func (m *SyncMap[K, V]) Range(f func(k K, v V) bool) {
+func (m *SyncMap[K, V]) Range(f func(k K, v V)) {
 	m.RLock()
 	defer m.RUnlock()
 	for k, v := range m.m {
-		if f(k, v) {
-			return
-		}
+		f(k, v)
 	}
 }
 
-func (m *SyncMap[K, V]) Len(key K) int {
+func (m *SyncMap[K, V]) Len() int {
 	return len(m.m)
 }
