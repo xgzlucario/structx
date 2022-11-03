@@ -7,7 +7,7 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-const SUM = 10000
+const SUM = 1000
 
 func getMapSet() mapset.Set[int] {
 	s := mapset.NewThreadUnsafeSet[int]()
@@ -43,7 +43,7 @@ func Benchmark_MapSetRange(b *testing.B) {
 	}
 }
 
-func Benchmark_ListSetRange(b *testing.B) {
+func Benchmark_LSetRange(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
 		s.Range(func(k int) {
@@ -66,7 +66,7 @@ func Benchmark_MapSetRemove(b *testing.B) {
 	}
 }
 
-func Benchmark_ListSetRemove(b *testing.B) {
+func Benchmark_LSetRemove(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
 		s.Remove(i)
@@ -87,7 +87,7 @@ func Benchmark_MapSetAdd(b *testing.B) {
 	}
 }
 
-func Benchmark_ListSetAdd(b *testing.B) {
+func Benchmark_LSetAdd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		getListSet()
 	}
@@ -108,7 +108,7 @@ func Benchmark_MapSetUnion(b *testing.B) {
 	}
 }
 
-func Benchmark_ListSetUnion(b *testing.B) {
+func Benchmark_LSetUnion(b *testing.B) {
 	s1 := getListSet()
 	s2 := getListSet()
 	for i := 0; i < b.N; i++ {
@@ -125,7 +125,7 @@ func Benchmark_MapSetIntersect(b *testing.B) {
 	}
 }
 
-func Benchmark_ListSetIntersect(b *testing.B) {
+func Benchmark_LSetIntersect(b *testing.B) {
 	s1 := getListSet()
 	s2 := getListSet()
 	for i := 0; i < b.N; i++ {
