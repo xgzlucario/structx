@@ -31,7 +31,7 @@ newS := structx.NewLSet(1,2,3) // (1,2,3)
 
 union := s.Union(newS) // (0,1,2,3)
 intersect := s.Intersect(newS) // (1,2)
-diff := s.Diff(newS) // (0,3)
+diff := s.Difference(newS) // (0,3)
 ```
 
 #### **Benchmark**
