@@ -42,15 +42,15 @@ goos: linux
 goarch: amd64
 pkg: github.com/xgzlucario/structx/test
 cpu: AMD Ryzen 7 5800H with Radeon Graphics  
-Benchmark_MapSetRange-16         133394	     9016 ns/op	       0 B/op	    0 allocs/op
-Benchmark_LSetRange-16           773064	     1466 ns/op	       0 B/op	    0 allocs/op
-Benchmark_MapSetRemove-16     279567439	    4.300 ns/op	       0 B/op	    0 allocs/op
-Benchmark_LSetRemove-16       356212938	    3.416 ns/op	       0 B/op	    0 allocs/op
-Benchmark_MapSetAdd-16            21336	    56803 ns/op	   47866 B/op	   68 allocs/op
-Benchmark_LSetAdd-16              17331	    69128 ns/op	   73054 B/op	   78 allocs/op
-Benchmark_MapSetUnion-16          12068	    97159 ns/op	   47874 B/op	   68 allocs/op
-Benchmark_LSetUnion-16            31046	    38477 ns/op	   30181 B/op	   10 allocs/op
-Benchmark_MapSetIntersect-16      14470	    82726 ns/op	   47878 B/op	   68 allocs/op
-Benchmark_LSetIntersect-16        29746	    40416 ns/op	   30182 B/op	   10 allocs/op
+Benchmark_MapSetRange-16        	  130693	      8991 ns/op	       0 B/op	       0 allocs/op
+Benchmark_LSetRange-16          	  821851	      1415 ns/op	       0 B/op	       0 allocs/op
+Benchmark_MapSetRemove-16       	318151948	         3.758 ns/op	       0 B/op	       0 allocs/op
+Benchmark_LSetRemove-16         	364006822	         3.303 ns/op	       0 B/op	       0 allocs/op
+Benchmark_MapSetAdd-16          	   21847	     55064 ns/op	   47871 B/op	      68 allocs/op
+Benchmark_LSetAdd-16            	   17355	     68348 ns/op	   73055 B/op	      78 allocs/op
+Benchmark_MapSetUnion-16        	   12676	     94480 ns/op	   47874 B/op	      68 allocs/op
+Benchmark_LSetUnion-16          	   31516	     38181 ns/op	   30181 B/op	      10 allocs/op
+Benchmark_MapSetIntersect-16    	   14566	     82046 ns/op	   47878 B/op	      68 allocs/op
+Benchmark_LSetIntersect-16      	   37855	     31650 ns/op	   30181 B/op	      10 allocs/op
 ```
 
