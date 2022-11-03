@@ -257,11 +257,10 @@ func (z *ZSet) Set(score float64, key int64, dat any) {
 	}
 }
 
-// IncrBy ..
+// IncrBy
 func (z *ZSet) IncrBy(score float64, key int64) (float64, any) {
 	v, ok := z.dict[key]
 	if !ok {
-		// use negative infinity ?
 		return 0, nil
 	}
 	if score != 0 {

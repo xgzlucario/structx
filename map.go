@@ -18,11 +18,9 @@ func (m Map[K, V]) Delete(key K) {
 	delete(m, key)
 }
 
-func (m Map[K, V]) Range(f func(k K, v V) bool) {
+func (m Map[K, V]) Range(f func(k K, v V)) {
 	for k, v := range m {
-		if f(k, v) {
-			return
-		}
+		f(k, v)
 	}
 }
 

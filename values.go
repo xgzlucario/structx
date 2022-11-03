@@ -60,11 +60,6 @@ func (s Values[T]) RShift() {
 	s.Top(s.Len() - 1)
 }
 
-// Move: Move an element to any position
-func (s Values[T]) Move(old, new int) {
-	// TODO
-}
-
 func (s Values[T]) Reverse() {
 	l, r := 0, s.Len()-1
 	for l < r {
@@ -84,6 +79,12 @@ func (this Values[T]) Max() T {
 	return max
 }
 
+func (this Values[T]) Range(f func(k T)) {
+	for _, v := range this {
+		f(v)
+	}
+}
+
 func (this Values[T]) Min() T {
 	min := this[0]
 	for _, s := range this {
@@ -92,14 +93,6 @@ func (this Values[T]) Min() T {
 		}
 	}
 	return min
-}
-
-func (this Values[T]) Range(f func(T) bool) {
-	for _, s := range this {
-		if f(s) {
-			return
-		}
-	}
 }
 
 func (this Values[T]) Print() {

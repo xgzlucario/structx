@@ -7,26 +7,128 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-func Benchmark_Map1(b *testing.B) {
-	s := mapset.NewSet[int]()
-	for i := 0; i < b.N; i++ {
+const SUM = 10000
+
+func getMapSet() mapset.Set[int] {
+	s := mapset.NewThreadUnsafeSet[int]()
+	for i := 0; i < SUM; i++ {
 		s.Add(i)
-		s.Contains(i)
+	}
+	return s
+}
+
+func getListSet() *structx.LSet[int] {
+	s := structx.NewLSet[int]()
+	for i := 0; i < SUM; i++ {
+		s.Add(i)
+	}
+	return s
+}
+
+// func getZSet() *structx.ZSet {
+// 	s := structx.New()
+// 	for i := 0; i < SUM; i++ {
+// 		s.IncrBy(float64(i), int64(i))
+// 	}
+// 	return s
+// }
+
+// ============ Range ============
+func Benchmark_MapSetRange(b *testing.B) {
+	s := getMapSet()
+	for i := 0; i < b.N; i++ {
+		s.Each(func(i int) bool {
+			return false
+		})
 	}
 }
 
-func Benchmark_Map2(b *testing.B) {
-	maps := structx.NewMap[int, struct{}]()
+func Benchmark_ListSetRange(b *testing.B) {
+	s := getListSet()
 	for i := 0; i < b.N; i++ {
-		maps.Store(i, struct{}{})
-		maps.Load(i)
+		s.Range(func(k int) {
+		})
 	}
 }
 
-func Benchmark_Map3(b *testing.B) {
-	maps := structx.NewSet[int]()
+// func Benchmark_ZSetRange(b *testing.B) {
+// 	s := getZSet()
+// 	for i := 0; i < b.N; i++ {
+// 		s.Range(0, s.Len(), func(f float64, i int64, a any) {})
+// 	}
+// }
+
+// ============ Remove ============
+func Benchmark_MapSetRemove(b *testing.B) {
+	s := getMapSet()
 	for i := 0; i < b.N; i++ {
-		maps.Add(i)
-		maps.Exist(i)
+		s.Remove(i)
+	}
+}
+
+func Benchmark_ListSetRemove(b *testing.B) {
+	s := getListSet()
+	for i := 0; i < b.N; i++ {
+		s.Remove(i)
+	}
+}
+
+// func Benchmark_ZSetRemove(b *testing.B) {
+// 	s := getZSet()
+// 	for i := 0; i < b.N; i++ {
+// 		s.Delete(int64(i))
+// 	}
+// }
+
+// ============ Add ============
+func Benchmark_MapSetAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getMapSet()
+	}
+}
+
+func Benchmark_ListSetAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		getListSet()
+	}
+}
+
+// func Benchmark_ZSetAdd(b *testing.B) {
+// 	for i := 0; i < b.N; i++ {
+// 		getZSet()
+// 	}
+// }
+
+// ============ Union ============
+func Benchmark_MapSetUnion(b *testing.B) {
+	s1 := getMapSet()
+	s2 := getMapSet()
+	for i := 0; i < b.N; i++ {
+		s1.Union(s2)
+	}
+}
+
+func Benchmark_ListSetUnion(b *testing.B) {
+	s1 := getListSet()
+	s2 := getListSet()
+	for i := 0; i < b.N; i++ {
+		s1.Union(s2)
+	}
+}
+
+// ============ Intersect ============
+func Benchmark_MapSetIntersect(b *testing.B) {
+	s1 := getMapSet()
+	s2 := getMapSet()
+	for i := 0; i < b.N; i++ {
+		s1.Intersect(s2)
+	}
+}
+
+func Benchmark_ListSetIntersect(b *testing.B) {
+	s1 := getListSet()
+	s2 := getListSet()
+	for i := 0; i < b.N; i++ {
+		s1.Intersect(s2)
 	}
 }

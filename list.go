@@ -9,12 +9,10 @@ type List[T Value] struct {
 // NewList: return new List
 func NewList[T Value](values ...T) *List[T] {
 	if len(values) > 0 {
-		return &List[T]{
-			Values: values,
-		}
+		return &List[T]{Values: values}
 	}
 	return &List[T]{
-		Values: make(Values[T], MAKE_SIZE),
+		Values: make(Values[T], 0, MAKE_SIZE),
 	}
 }
 
@@ -49,4 +47,13 @@ func (ls *List[T]) RPop() T {
 	val := ls.Values[ls.Len()-1]
 	ls.Values = ls.Values[:ls.Len()-1]
 	return val
+}
+
+func (ls *List[T]) RemoveElem(elem T) {
+	for i, v := range ls.Values {
+		if v == elem {
+			ls.Values = append(ls.Values[:i], ls.Values[i+1:]...)
+			return
+		}
+	}
 }
