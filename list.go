@@ -1,11 +1,11 @@
 package structx
 
-type List[T Value] struct {
+type List[T comparable] struct {
 	Values[T]
 }
 
 // NewList: return new List
-func NewList[T Value](values ...T) *List[T] {
+func NewList[T comparable](values ...T) *List[T] {
 	return &List[T]{Values: values}
 }
 

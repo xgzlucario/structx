@@ -2,10 +2,9 @@ package structx
 
 import (
 	"fmt"
-	"sort"
 )
 
-type Values[T Value] []T
+type Values[T comparable] []T
 
 func (s Values[T]) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
@@ -15,14 +14,13 @@ func (s Values[T]) Len() int {
 	return len(s)
 }
 
-func (s Values[T]) Less(i, j int) bool {
-	return s[i] < s[j]
-}
+// func (s Values[T]) Less(i, j int) bool {
+// 	return s[i] < s[j]
+// }
 
-// Sort: use sort
-func (s Values[T]) Sort() {
-	sort.Sort(s)
-}
+// func (s Values[T]) Sort() {
+// 	sort.Sort(s)
+// }
 
 // Top: move value to the top
 func (s Values[T]) Top(i int) {
@@ -69,30 +67,10 @@ func (s Values[T]) Reverse() {
 	}
 }
 
-func (this Values[T]) Max() T {
-	max := this[0]
-	for _, s := range this {
-		if s > max {
-			max = s
-		}
-	}
-	return max
-}
-
 func (this Values[T]) Range(f func(k T)) {
 	for _, v := range this {
 		f(v)
 	}
-}
-
-func (this Values[T]) Min() T {
-	min := this[0]
-	for _, s := range this {
-		if s < min {
-			min = s
-		}
-	}
-	return min
 }
 
 func (this Values[T]) Print() {

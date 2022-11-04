@@ -1,18 +1,20 @@
 package structx
 
-import "fmt"
+import (
+	"fmt"
+)
 
 /*
 LSet (ListSet): map + list (not thread safe)
 ListSet has a significant performance improvement over MapSet
 in the Range Union Intersect function
 */
-type LSet[T Value] struct {
+type LSet[T comparable] struct {
 	m  Map[T, struct{}]
 	ls *List[T]
 }
 
-func NewLSet[T Value](values ...T) *LSet[T] {
+func NewLSet[T comparable](values ...T) *LSet[T] {
 	ls := &LSet[T]{
 		m:  NewMap[T, struct{}](),
 		ls: NewList[T](),
@@ -36,7 +38,7 @@ func (s *LSet[T]) Add(key T) bool {
 // make sure that key is not exist!
 func (s *LSet[T]) add(key T) {
 	s.ls.RPush(key)
-	s.m.Store(key, struct{}{})
+	s.m[key] = struct{}{}
 }
 
 // Remove
@@ -51,7 +53,7 @@ func (s *LSet[T]) Remove(key T) bool {
 
 // make sure that key is exist!
 func (s *LSet[T]) remove(key T) {
-	s.m.Delete(key)
+	delete(s.m, key)
 	s.ls.RemoveElem(key)
 }
 
@@ -122,9 +124,9 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	return newSet
 }
 
-func (s *LSet[T]) Sort() {
-	s.ls.Sort()
-}
+// func (s *LSet[T]) Sort() {
+// 	s.ls.Sort()
+// }
 
 func (s *LSet[T]) Reverse() {
 	s.ls.Reverse()
@@ -132,14 +134,6 @@ func (s *LSet[T]) Reverse() {
 
 func (s *LSet[T]) Len() int {
 	return s.ls.Len()
-}
-
-func (s *LSet[T]) Min() T {
-	return s.ls.Min()
-}
-
-func (s *LSet[T]) Max() T {
-	return s.ls.Max()
 }
 
 func (s *LSet[T]) Values() Values[T] {
@@ -151,7 +145,7 @@ func (s *LSet[T]) Print() {
 }
 
 // Compare two lset length and return (*min, *max)
-func compareTwoLSet[T Value](s1 *LSet[T], s2 *LSet[T]) (*LSet[T], *LSet[T]) {
+func compareTwoLSet[T comparable](s1 *LSet[T], s2 *LSet[T]) (*LSet[T], *LSet[T]) {
 	if s1.Len() <= s2.Len() {
 		return s1, s2
 	}
