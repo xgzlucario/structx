@@ -1,19 +1,12 @@
 package structx
 
-const MAKE_SIZE = 8
-
 type List[T Value] struct {
 	Values[T]
 }
 
 // NewList: return new List
 func NewList[T Value](values ...T) *List[T] {
-	if len(values) > 0 {
-		return &List[T]{Values: values}
-	}
-	return &List[T]{
-		Values: make(Values[T], 0, MAKE_SIZE),
-	}
+	return &List[T]{Values: values}
 }
 
 // AddToSet: add to the set

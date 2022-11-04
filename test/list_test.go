@@ -2,30 +2,32 @@ package test
 
 import (
 	"testing"
-
-	"github.com/xgzlucario/structx"
 )
 
 func Benchmark_List1(b *testing.B) {
-	ls := make([]int, 0)
+	ls := make(map[int]string)
 	for i := 0; i < b.N; i++ {
-		ls = append(ls, i)
+		ls[i] = "abc"
 	}
 }
 
 func Benchmark_List2(b *testing.B) {
-	ls := structx.NewList[int]()
+	ls := make(map[int]string, 8)
 	for i := 0; i < b.N; i++ {
-		ls.RPush(i)
+		ls[i] = "abc"
 	}
 }
 
-// func Benchmark3(b *testing.B) {
-// 	l1 := util.NewListx[int]()
+func Benchmark_List3(b *testing.B) {
+	ls := make(map[int]string, 32)
+	for i := 0; i < b.N; i++ {
+		ls[i] = "abc"
+	}
+}
 
-// 	for i := 0; i < 16; i++ {
-// 		fmt.Println(l1)
-// 		l1.RPush(i + 1)
-// 	}
-// 	fmt.Println(l1)
-// }
+func Benchmark_List4(b *testing.B) {
+	ls := make(map[int]string, 128)
+	for i := 0; i < b.N; i++ {
+		ls[i] = "abc"
+	}
+}

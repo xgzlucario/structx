@@ -67,9 +67,19 @@ func (s *LSet[T]) Range(f func(k T)) {
 }
 
 func (s *LSet[T]) Copy() *LSet[T] {
-	arr := make([]T, s.ls.Len())
-	copy(arr, s.Values())
-	return NewLSet(arr...)
+	newLSet := &LSet[T]{
+		m: make(Map[T, struct{}], s.Len()),
+		ls: &List[T]{
+			Values: make([]T, s.Len()),
+		},
+	}
+	// copy list
+	copy(newLSet.ls.Values, s.ls.Values)
+	// copy map
+	for _, v := range s.Values() {
+		s.m[v] = struct{}{}
+	}
+	return newLSet
 }
 
 // Union

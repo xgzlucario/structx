@@ -3,7 +3,7 @@ package structx
 type Map[K Value, V AnyValue] map[K]V
 
 func NewMap[K Value, V AnyValue]() Map[K, V] {
-	return make(Map[K, V], MAKE_SIZE)
+	return Map[K, V]{}
 }
 
 func (m Map[K, V]) Store(k K, v V) {
