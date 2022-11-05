@@ -1,6 +1,8 @@
 package structx
 
-import "sync"
+import (
+	"sync"
+)
 
 type Map[K comparable, V any] map[K]V
 
@@ -26,10 +28,11 @@ func (m *SyncMap[K, V]) Store(k K, v V) {
 	m.m[k] = v
 }
 
-func (m *SyncMap[K, V]) Load(k K) V {
+func (m *SyncMap[K, V]) Load(k K) (V, bool) {
 	m.RLock()
 	defer m.RUnlock()
-	return m.m[k]
+	v, ok := m.m[k]
+	return v, ok
 }
 
 func (m *SyncMap[K, V]) Delete(key K) {
@@ -44,6 +47,12 @@ func (m *SyncMap[K, V]) Range(f func(k K, v V)) {
 	for k, v := range m.m {
 		f(k, v)
 	}
+}
+
+func (m *SyncMap[K, V]) Clear() {
+	m.Lock()
+	defer m.Unlock()
+	m.m = NewMap[K, V]()
 }
 
 func (m *SyncMap[K, V]) Len() int {

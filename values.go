@@ -36,8 +36,13 @@ func (s Values[T]) Bottom(i int) {
 	}
 }
 
-// Index: return the first index of element
-func (this Values[T]) Index(elem T) int {
+// Index: return the element of index
+func (this Values[T]) Index(index int) T {
+	return this[index]
+}
+
+// Find: return the index of element
+func (this Values[T]) Find(elem T) int {
 	for i, v := range this {
 		if v == elem {
 			return i
@@ -67,9 +72,9 @@ func (s Values[T]) Reverse() {
 	}
 }
 
-func (this Values[T]) Range(f func(k T)) {
-	for _, v := range this {
-		f(v)
+func (this Values[T]) Range(f func(i int, v T)) {
+	for i, v := range this {
+		f(i, v)
 	}
 }
 

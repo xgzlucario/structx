@@ -9,39 +9,50 @@ func NewList[T comparable](values ...T) *List[T] {
 	return &List[T]{Values: values}
 }
 
-// AddToSet: add to the set
+// AddToSet
 func (ls *List[T]) AddToSet(value T) bool {
-	if ls.Index(value) < 0 {
+	if ls.Find(value) < 0 {
 		ls.RPush(value)
 		return true
 	}
 	return false
 }
 
-func (ls *List[T]) LPush(value T) {
-	ls.RPush(value)
-	ls.RShift()
+func (ls *List[T]) LPush(values ...T) {
+	ls.Values = append(values, ls.Values...)
 }
 
-func (ls *List[T]) RPush(value T) {
-	ls.Values = append(ls.Values, value)
+func (ls *List[T]) RPush(values ...T) {
+	ls.Values = append(ls.Values, values...)
 }
 
 func (ls *List[T]) LPop() T {
-	ls.LShift()
-	return ls.RPop()
+	val := ls.Values[0]
+	ls.Values = ls.Values[1:]
+	return val
 }
 
-func (ls *List[T]) Set(index int, value T) {
-	ls.Values[index] = value
+// Insert
+func (ls *List[T]) Insert(i int, value T) {
+	if i <= 0 {
+		ls.LPush(value)
+
+	} else if i >= ls.Len() {
+		ls.RPush(value)
+
+	} else {
+		ls.Values = append(append(ls.Values[0:i], value), ls.Values[i:]...)
+	}
 }
 
+// RPop
 func (ls *List[T]) RPop() T {
 	val := ls.Values[ls.Len()-1]
 	ls.Values = ls.Values[:ls.Len()-1]
 	return val
 }
 
+// RemoveElem
 func (ls *List[T]) RemoveElem(elem T) {
 	for i, v := range ls.Values {
 		if v == elem {
