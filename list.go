@@ -9,15 +9,6 @@ func NewList[T comparable](values ...T) *List[T] {
 	return &List[T]{Values: values}
 }
 
-// AddToSet
-func (ls *List[T]) AddToSet(value T) bool {
-	if ls.Find(value) < 0 {
-		ls.RPush(value)
-		return true
-	}
-	return false
-}
-
 func (ls *List[T]) LPush(values ...T) {
 	ls.Values = append(values, ls.Values...)
 }

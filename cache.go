@@ -12,14 +12,14 @@ type item[K comparable, V any] struct {
 }
 
 type Cache[K comparable, V any] struct {
-	m      SyncMap[K, *item[K, V]]
+	m      *SyncMap[K, *item[K, V]]
 	gcChan chan *item[K, V]
 }
 
 // NewCache
 func NewCache[K comparable, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
-		m:      SyncMap[K, *item[K, V]]{},
+		m:      NewSyncMap[K, *item[K, V]](),
 		gcChan: make(chan *item[K, V], 32),
 	}
 	// start gc

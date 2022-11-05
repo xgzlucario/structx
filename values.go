@@ -4,6 +4,10 @@ import (
 	"fmt"
 )
 
+type Comparable interface {
+	string | float32 | float64 | int64 | int32 | int | uint | byte
+}
+
 type Values[T comparable] []T
 
 func (s Values[T]) Swap(i, j int) {
