@@ -97,9 +97,7 @@ func (zsl *skipList[K, S]) zslInsert(score S, key K) *skipListNode[K, S] {
 			rank[i] = rank[i+1]
 		}
 		if x.level[i] != nil {
-			for x.level[i].forward != nil &&
-				(x.level[i].forward.score < score ||
-					(x.level[i].forward.score == score)) {
+			for x.level[i].forward != nil && x.level[i].forward.score <= score {
 				rank[i] += x.level[i].span
 				x = x.level[i].forward
 			}
@@ -183,10 +181,9 @@ func (zsl *skipList[K, S]) zslDeleteNode(x *skipListNode[K, S], update []*skipLi
 func (zsl *skipList[K, S]) zslDelete(score S, key K) bool {
 	update := make([]*skipListNode[K, S], zSkiplistMaxlevel)
 	x := zsl.header
+
 	for i := zsl.level - 1; i >= 0; i-- {
-		for x.level[i].forward != nil &&
-			(x.level[i].forward.score < score ||
-				(x.level[i].forward.score == score)) {
+		for x.level[i].forward != nil && x.level[i].forward.score <= score {
 			x = x.level[i].forward
 		}
 		update[i] = x
@@ -210,10 +207,9 @@ func (zsl *skipList[K, S]) zslDelete(score S, key K) bool {
 func (zsl *skipList[K, S]) zslGetRank(score S, key K) int64 {
 	rank := uint64(0)
 	x := zsl.header
+
 	for i := zsl.level - 1; i >= 0; i-- {
-		for x.level[i].forward != nil &&
-			(x.level[i].forward.score < score ||
-				(x.level[i].forward.score == score)) {
+		for x.level[i].forward != nil && x.level[i].forward.score <= score {
 			rank += x.level[i].span
 			x = x.level[i].forward
 		}
@@ -395,7 +391,6 @@ func (z *ZSet[K, S]) commonRange(start, end int64, reverse bool, f func(S, K, an
 }
 
 func (z *ZSet[K, S]) Print() {
-	fmt.Println(z.Len())
 	for k, v := range z.dict {
 		fmt.Println(k, v)
 	}
