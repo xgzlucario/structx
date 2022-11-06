@@ -84,9 +84,9 @@ func (c *Cache[K, V]) startGC() {
 
 		if gcSet.Len() > 0 {
 			// expire
-			key, ttl, _ := gcSet.GetDataByRank(0, true)
-			if ttl < time.Now().Unix() {
-				gcSet.Delete(key)
+			node := gcSet.GetDataByRank(0, true)
+			if node.score < time.Now().Unix() {
+				gcSet.Delete(node.key)
 			}
 		}
 	}

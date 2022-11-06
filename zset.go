@@ -181,7 +181,7 @@ func (zsl *skipList[K, S]) zslDeleteNode(x *skipListNode[K, S], update []*skipLi
  * it is not freed (but just unlinked) and *node is set to the node pointer,
  * so that it is possible for the caller to reuse the node (including the
  * referenced SDS string at node->node). */
-func (zsl *skipList[K, S]) zslDelete(score S, key K) int {
+func (zsl *skipList[K, S]) zslDelete(score S, key K) bool {
 	update := make([]*skipListNode[K, S], zSkiplistMaxlevel)
 	x := zsl.header
 	for i := zsl.level - 1; i >= 0; i-- {
@@ -192,14 +192,16 @@ func (zsl *skipList[K, S]) zslDelete(score S, key K) int {
 		}
 		update[i] = x
 	}
+
 	/* We may have multiple elements with the same score, what we need
 	 * is to find the element with both the right score and nodeect. */
 	x = x.level[0].forward
 	if x != nil && score == x.score && x.key == key {
 		zsl.zslDeleteNode(x, update)
-		return 1
+		return true
 	}
-	return 0 /* not found */
+
+	return false
 }
 
 /* Find the rank for an element by both score and node.
@@ -274,22 +276,20 @@ func (z *ZSet[K, S]) Set(key K, score S, data any) {
 }
 
 // IncrBy
-func (z *ZSet[K, S]) IncrBy(key K, score S) (S, any) {
+func (z *ZSet[K, S]) IncrBy(key K, score S) *node[K, S] {
 	v, ok := z.dict[key]
 	if !ok {
-		var emptyS S
-		return emptyS, nil
+		return nil
 	}
 
 	z.zsl.zslDelete(v.score, key)
 	v.score += score
 	z.zsl.zslInsert(v.score, key)
 
-	return v.score, v.data
+	return v
 }
 
-// Delete removes an element from the ZSet
-// by its key.
+// Delete: delete element by key
 func (z *ZSet[K, S]) Delete(key K) (ok bool) {
 	v, ok := z.dict[key]
 	if ok {
@@ -304,11 +304,10 @@ func (z *ZSet[K, S]) Delete(key K) (ok bool) {
 // found by the parameter key.
 // The parameter reverse determines the rank is descent or ascend，
 // true means descend and false means ascend.
-func (z *ZSet[K, S]) GetRank(key K, reverse bool) (rank int64, score S, data any) {
-	var emptyS S
+func (z *ZSet[K, S]) GetRank(key K, reverse bool) (int64, *node[K, S]) {
 	v, ok := z.dict[key]
 	if !ok {
-		return -1, emptyS, nil
+		return -1, nil
 	}
 	r := z.zsl.zslGetRank(v.score, key)
 	if reverse {
@@ -316,38 +315,15 @@ func (z *ZSet[K, S]) GetRank(key K, reverse bool) (rank int64, score S, data any
 	} else {
 		r--
 	}
-	return int64(r), v.score, v.data
-
-}
-
-// GetData returns data stored in the map by its key
-func (z *ZSet[K, S]) GetData(key K) (data any, ok bool) {
-	o, ok := z.dict[key]
-	if !ok {
-		return nil, false
-	}
-	return o.data, true
-}
-
-// GetScore implements ZScore
-func (z *ZSet[K, S]) GetScore(key K) (score S, ok bool) {
-	var emptyS S
-	o, ok := z.dict[key]
-	if !ok {
-		return emptyS, false
-	}
-	return o.score, true
+	return int64(r), v
 }
 
 // GetDataByRank returns the id,score and extra data of an element which
 // found by position in the rank.
 // The parameter rank is the position, reverse says if in the descend rank.
-func (z *ZSet[K, S]) GetDataByRank(rank int64, reverse bool) (key K, score S, data any) {
-	var emptyK K
-	var emptyS S
-
+func (z *ZSet[K, S]) GetDataByRank(rank int64, reverse bool) *node[K, S] {
 	if rank < 0 || rank > z.zsl.length {
-		return emptyK, emptyS, nil
+		return nil
 	}
 	if reverse {
 		rank = z.zsl.length - rank
@@ -356,13 +332,10 @@ func (z *ZSet[K, S]) GetDataByRank(rank int64, reverse bool) (key K, score S, da
 	}
 	n := z.zsl.zslGetElementByRank(uint64(rank))
 	if n == nil {
-		return emptyK, emptyS, nil
+		return nil
 	}
-	dat, ok := z.dict[n.key]
-	if !ok {
-		return emptyK, emptyS, nil
-	}
-	return dat.key, dat.score, dat.data
+
+	return z.dict[n.key]
 }
 
 // Range implements ZRANGE
