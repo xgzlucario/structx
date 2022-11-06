@@ -12,27 +12,23 @@ type (
 		forward *skipListNode[K, S]
 		span    uint64
 	}
-
 	skipListNode[K comparable, S Value] struct {
 		key      K
 		score    S
 		backward *skipListNode[K, S]
 		level    []*skipListLevel[K, S]
 	}
-
 	node[K comparable, S Value] struct {
 		key   K
 		score S
 		data  K
 	}
-
 	skipList[K comparable, S Value] struct {
 		header *skipListNode[K, S]
 		tail   *skipListNode[K, S]
 		length int64
 		level  int
 	}
-
 	ZSet[K comparable, S Value] struct {
 		dict map[K]*node[K, S]
 		zsl  *skipList[K, S]
@@ -239,7 +235,7 @@ func (zsl *skipList[K, S]) zslGetElementByRank(rank uint64) *skipListNode[K, S] 
 	return nil
 }
 
-// New creates a new ZSet and return its pointer
+// NewZSet: Return new ZSet by specify the key and value type
 func NewZSet[K comparable, S Value]() *ZSet[K, S] {
 	return &ZSet[K, S]{
 		dict: make(map[K]*node[K, S]),
@@ -247,15 +243,16 @@ func NewZSet[K comparable, S Value]() *ZSet[K, S] {
 	}
 }
 
-// Length returns counts of elements
+// Len
 func (z *ZSet[K, S]) Len() int64 {
 	return z.zsl.length
 }
 
-// Set: add or update
+// Set: add or update elem
 func (z *ZSet[K, S]) Set(key K, score S, data ...K) {
 	v, ok := z.dict[key]
 
+	// new node
 	node := &node[K, S]{
 		key: key, score: score,
 	}
@@ -275,23 +272,25 @@ func (z *ZSet[K, S]) Set(key K, score S, data ...K) {
 	}
 }
 
-// IncrBy
-func (z *ZSet[K, S]) IncrBy(key K, score S) *node[K, S] {
+// IncrBy: incr by key, auto create if not exist
+func (z *ZSet[K, S]) IncrBy(key K, score S) S {
 	v, ok := z.dict[key]
+	// not exist
 	if !ok {
-		return nil
+		z.Set(key, score)
+		return score
 	}
-
 	z.zsl.zslDelete(v.score, key)
 	v.score += score
 	z.zsl.zslInsert(v.score, key)
 
-	return v
+	return v.score
 }
 
-// Delete: delete element by key
-func (z *ZSet[K, S]) Delete(key K) (ok bool) {
+// Delete: delete elem by key
+func (z *ZSet[K, S]) Delete(key K) bool {
 	v, ok := z.dict[key]
+	// exist
 	if ok {
 		z.zsl.zslDelete(v.score, key)
 		delete(z.dict, key)
@@ -300,10 +299,7 @@ func (z *ZSet[K, S]) Delete(key K) (ok bool) {
 	return false
 }
 
-// GetRank returns position,score and extra data of an element which
-// found by the parameter key.
-// The parameter reverse determines the rank is descent or ascend，
-// true means descend and false means ascend.
+// GetRank: get rank and data by specified key and reverse
 func (z *ZSet[K, S]) GetRank(key K, reverse bool) (int64, *node[K, S]) {
 	v, ok := z.dict[key]
 	if !ok {
@@ -318,9 +314,7 @@ func (z *ZSet[K, S]) GetRank(key K, reverse bool) (int64, *node[K, S]) {
 	return int64(r), v
 }
 
-// GetDataByRank returns the id,score and extra data of an element which
-// found by position in the rank.
-// The parameter rank is the position, reverse says if in the descend rank.
+// GetDataByRank: Get data by specified rank and reverse
 func (z *ZSet[K, S]) GetDataByRank(rank int64, reverse bool) *node[K, S] {
 	if rank < 0 || rank > z.zsl.length {
 		return nil
