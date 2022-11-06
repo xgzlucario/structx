@@ -8,16 +8,24 @@ import (
 )
 
 func Benchmark_ZSet1(b *testing.B) {
-	s := structx.New()
+	s := structx.NewZSet[int, float64]()
+	s.Set(0, 234, nil)
+	s.Set(0, 456, nil)
+
 	for i := 0; i < b.N; i++ {
-		s.IncrBy(1, int64(i%1000))
+		s.IncrBy(234, float64(i))
+		s.IncrBy(456, float64(i*2))
 	}
 }
 
 func Benchmark_ZSet2(b *testing.B) {
 	s := zset.New()
+	s.Set(0, 234, nil)
+	s.Set(0, 345, nil)
+
 	for i := 0; i < b.N; i++ {
-		s.IncrBy(1, int64(i%1000))
+		s.IncrBy(float64(i), 234)
+		s.IncrBy(float64(i*2), 456)
 	}
 }
 

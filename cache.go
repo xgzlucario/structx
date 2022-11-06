@@ -67,22 +67,26 @@ func (c *Cache[K, V]) Release() {
 	c.alive = false
 }
 
+func (c *Cache[K, V]) Len() int {
+	return c.m.Len()
+}
+
 func (c *Cache[K, V]) startGC() {
-	gcList := NewSortList[K, int64]()
+	gcSet := NewZSet[K, int64]()
 
 	for c.alive {
 		select {
 		case value := <-c.gcChan:
 			// sort with ttl
-			gcList.Insert(value.ttl, value.key)
+			gcSet.Set(value.key, value.ttl, nil)
 		default:
 		}
 
-		if !gcList.Empty() {
-			// expireTime
-			node := gcList.Index(0)
-			if node.value < time.Now().Unix() {
-				gcList.Delete(node.value)
+		if gcSet.Len() > 0 {
+			// expire
+			key, ttl, _ := gcSet.GetDataByRank(0, true)
+			if ttl < time.Now().Unix() {
+				gcSet.Delete(key)
 			}
 		}
 	}

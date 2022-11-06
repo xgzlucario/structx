@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type Comparable interface {
+type Value interface {
 	string | float32 | float64 | int64 | int32 | int | uint | byte
 }
 
