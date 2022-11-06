@@ -4,20 +4,20 @@ import "time"
 
 var DefaultTTL = time.Minute * 10
 
-type cacheItem[K comparable, V any] struct {
+type cacheItem[K Value, V any] struct {
 	key  K
 	data V
 	ttl  int64 // expireTime
 }
 
-type Cache[K comparable, V any] struct {
+type Cache[K Value, V any] struct {
 	m      *SyncMap[K, *cacheItem[K, V]]
 	gcChan chan *cacheItem[K, V]
 	alive  bool
 }
 
 // NewCache
-func NewCache[K comparable, V any]() *Cache[K, V] {
+func NewCache[K Value, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
 		m:      NewSyncMap[K, *cacheItem[K, V]](),
 		gcChan: make(chan *cacheItem[K, V], 32),
@@ -78,16 +78,17 @@ func (c *Cache[K, V]) startGC() {
 		select {
 		case value := <-c.gcChan:
 			// sort with ttl
-			gcSet.Set(value.key, value.ttl)
+			gcSet.Incr(value.key, value.ttl)
 		default:
 		}
 
-		if gcSet.Len() > 0 {
-			// expire
-			node := gcSet.GetDataByRank(0, true)
-			if node.score < time.Now().Unix() {
-				gcSet.Delete(node.key)
-			}
-		}
+		// if gcSet.Len() > 0 {
+		// 	ttl := gcSet.GetByRank(0)
+		// 	// expire
+		// 	node := gcSet.GetDataByRank(0, true)
+		// 	if node.score < time.Now().Unix() {
+		// 		gcSet.Delete(node.key)
+		// 	}
+		// }
 	}
 }
