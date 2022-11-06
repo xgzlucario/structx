@@ -21,6 +21,7 @@ type (
 	}
 
 	node[K comparable, S Value] struct {
+		key   K
 		score S
 		data  K
 	}
@@ -255,7 +256,9 @@ func (z *ZSet[K, S]) Len() int64 {
 func (z *ZSet[K, S]) Set(key K, score S, data ...K) {
 	v, ok := z.dict[key]
 
-	node := &node[K, S]{score: score}
+	node := &node[K, S]{
+		key: key, score: score,
+	}
 	if len(data) > 0 {
 		node.data = data[0]
 	}
