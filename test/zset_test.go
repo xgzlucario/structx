@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/liyiheng/zset"
@@ -9,13 +10,14 @@ import (
 
 func Benchmark_ZSet1(b *testing.B) {
 	s := structx.NewZSet[int, float64]()
-	s.Set(0, 234, nil)
-	s.Set(0, 456, nil)
+	s.Set(0, 234)
+	s.Set(0, 345)
 
 	for i := 0; i < b.N; i++ {
 		s.IncrBy(234, float64(i))
-		s.IncrBy(456, float64(i*2))
+		s.IncrBy(345, float64(i*2))
 	}
+	fmt.Println("a", s.Len())
 }
 
 func Benchmark_ZSet2(b *testing.B) {
@@ -25,18 +27,18 @@ func Benchmark_ZSet2(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		s.IncrBy(float64(i), 234)
-		s.IncrBy(float64(i*2), 456)
+		s.IncrBy(float64(i*2), 345)
 	}
+	fmt.Println("b", s.Length())
 }
 
-// func Benchmark_ZSet3(b *testing.B) {
-// 	ss := structx.NewZSet[string, int]()
-// 	ss.Incr("a1", 3)
-// 	ss.Print()
-// 	ss.Incr("a2", 8)
-// 	ss.Print()
-// 	ss.Incr("a3", 5)
-// 	ss.Print()
-// 	ss.Incr("a1", 10)
-// 	ss.Print()
-// }
+func Benchmark_ZSet3(b *testing.B) {
+	s := structx.NewZSet[string, float64]()
+	s.Set("xgz", 234)
+	s.IncrBy("xgz", 1)
+
+	s.Set("lxs", 1)
+	s.IncrBy("lxs", 10)
+
+	s.Print()
+}

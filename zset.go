@@ -21,9 +21,8 @@ type (
 	}
 
 	node[K comparable, S Value] struct {
-		key   K
 		score S
-		data  any
+		data  K
 	}
 
 	skipList[K comparable, S Value] struct {
@@ -257,12 +256,14 @@ func (z *ZSet[K, S]) Len() int64 {
 }
 
 // Set: add or update
-func (z *ZSet[K, S]) Set(key K, score S, data any) {
+func (z *ZSet[K, S]) Set(key K, score S, data ...K) {
 	v, ok := z.dict[key]
 
-	z.dict[key] = &node[K, S]{
-		data: data, key: key, score: score,
+	node := &node[K, S]{score: score}
+	if len(data) > 0 {
+		node.data = data[0]
 	}
+	z.dict[key] = node
 
 	if ok {
 		// when score change
@@ -338,12 +339,12 @@ func (z *ZSet[K, S]) GetDataByRank(rank int64, reverse bool) *node[K, S] {
 	return z.dict[n.key]
 }
 
-// Range implements ZRANGE
+// Range
 func (z *ZSet[K, S]) Range(start, end int64, f func(S, K, any)) {
 	z.commonRange(start, end, false, f)
 }
 
-// RevRange implements ZREVRANGE
+// RevRange
 func (z *ZSet[K, S]) RevRange(start, end int64, f func(S, K, any)) {
 	z.commonRange(start, end, true, f)
 }
@@ -395,7 +396,7 @@ func (z *ZSet[K, S]) commonRange(start, end int64, reverse bool, f func(S, K, an
 
 func (z *ZSet[K, S]) Print() {
 	fmt.Println(z.Len())
-	z.Range(0, -1, func(s S, k K, a any) {
-		fmt.Printf("key: %v score: %v\n", k, s)
-	})
+	for k, v := range z.dict {
+		fmt.Println(k, v)
+	}
 }

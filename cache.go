@@ -78,7 +78,7 @@ func (c *Cache[K, V]) startGC() {
 		select {
 		case value := <-c.gcChan:
 			// sort with ttl
-			gcSet.Set(value.key, value.ttl, nil)
+			gcSet.Set(value.key, value.ttl, value.key)
 		default:
 		}
 
@@ -86,7 +86,7 @@ func (c *Cache[K, V]) startGC() {
 			// expire
 			node := gcSet.GetDataByRank(0, true)
 			if node.score < time.Now().Unix() {
-				gcSet.Delete(node.key)
+				gcSet.Delete(node.data)
 			}
 		}
 	}
