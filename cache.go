@@ -2,36 +2,37 @@ package structx
 
 import "time"
 
-// public
 var DefaultTTL = time.Minute * 10
 
-type item[K comparable, V any] struct {
+type cacheItem[K comparable, V any] struct {
 	key  K
 	data V
-	ttl  int64 // expirate time
+	ttl  int64 // expireTime
 }
 
 type Cache[K comparable, V any] struct {
-	m      *SyncMap[K, *item[K, V]]
-	gcChan chan *item[K, V]
+	m      *SyncMap[K, *cacheItem[K, V]]
+	gcChan chan *cacheItem[K, V]
+	alive  bool
 }
 
 // NewCache
 func NewCache[K comparable, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
-		m:      NewSyncMap[K, *item[K, V]](),
-		gcChan: make(chan *item[K, V], 32),
+		m:      NewSyncMap[K, *cacheItem[K, V]](),
+		gcChan: make(chan *cacheItem[K, V], 32),
+		alive:  true,
 	}
 	// start gc
-	cache.startGC()
+	go cache.startGC()
 	return cache
 }
 
 // Store
 func (c *Cache[K, V]) Store(k K, v V, ttl ...time.Duration) {
-	// set ttl
+	// with ttl
 	if len(ttl) > 0 {
-		value := &item[K, V]{
+		value := &cacheItem[K, V]{
 			key:  k,
 			data: v,
 			ttl:  time.Now().Add(ttl[0]).Unix(),
@@ -40,7 +41,7 @@ func (c *Cache[K, V]) Store(k K, v V, ttl ...time.Duration) {
 		c.gcChan <- value
 
 	} else {
-		c.m.Store(k, &item[K, V]{
+		c.m.Store(k, &cacheItem[K, V]{
 			data: v,
 		})
 	}
@@ -61,26 +62,27 @@ func (c *Cache[K, V]) Clear() {
 	c.m.Clear()
 }
 
-func (c *Cache[K, V]) startGC() {
-	gcList := NewList[*item[K, V]]()
+// Release
+func (c *Cache[K, V]) Release() {
+	c.alive = false
+}
 
-	for {
+func (c *Cache[K, V]) startGC() {
+	gcList := NewSortList[K, int64]()
+
+	for c.alive {
 		select {
 		case value := <-c.gcChan:
 			// sort with ttl
-			for i, v := range gcList.Values {
-				if value.ttl <= v.ttl {
-					gcList.Insert(i, value)
-					return
-				}
-			}
+			gcList.Insert(value.ttl, value.key)
 		default:
 		}
 
-		// expirate
-		if value := gcList.Index(0); value != nil {
-			if gcList.Index(0).ttl < time.Now().Unix() {
-				gcList.LPop()
+		if !gcList.Empty() {
+			// expireTime
+			node := gcList.Index(0)
+			if node.value < time.Now().Unix() {
+				gcList.Delete(node.value)
 			}
 		}
 	}

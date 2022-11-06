@@ -2,33 +2,32 @@ package structx
 
 import "fmt"
 
-type linkNode[K any, T Comparable] struct {
+type ZSetNode[K comparable, T Comparable] struct {
 	key   K
 	value T
-	next  *linkNode[K, T]
+	next  *ZSetNode[K, T]
 }
 
-/*
-SortList: Sorted Link List
-*/
-type SortList[K any, T Comparable] struct {
-	head     *linkNode[K, T]
-	mid      *linkNode[K, T]
-	tail     *linkNode[K, T]
-	len      int
+// ZSetV2: map + skipList
+type ZSetV2[K comparable, T Comparable] struct {
+	head     *ZSetNode[K, T]
+	mid      *ZSetNode[K, T]
+	tail     *ZSetNode[K, T]
+	m        Map[K, *ZSetNode[K, T]]
 	midCount int
 }
 
-// NewSortList: Return new SortList with values
-func NewSortList[K any, T Comparable]() *SortList[K, T] {
-	return &SortList[K, T]{}
+// NewZSet: Return new ZSet with values
+func NewZSet[K comparable, T Comparable]() *ZSetV2[K, T] {
+	return &ZSetV2[K, T]{
+		m: Map[K, *ZSetNode[K, T]]{},
+	}
 }
 
 // Insert: Insert and sort value
-func (this *SortList[K, T]) Insert(value T, key ...K) {
-	node := &linkNode[K, T]{value: value}
-	if len(key) > 0 {
-		node.key = key[0]
+func (this *ZSetV2[K, T]) Insert(key K, value T) {
+	node := &ZSetNode[K, T]{
+		key: key, value: value,
 	}
 
 	// head is nil
@@ -54,45 +53,31 @@ func (this *SortList[K, T]) Insert(value T, key ...K) {
 			p.next = node
 		}
 	}
-	this.len++
 
 	// reset mid
 	if value < this.mid.value {
 		this.midCount++
 
-	} else if this.midCount < this.len/2 {
+	} else if this.midCount < this.Len()/2 {
 		this.mid = this.mid.next
-		this.midCount++
 	}
 }
 
-// Delete: Delete the first node of value
-func (this *SortList[K, T]) Delete(value T) *linkNode[K, T] {
-	for p := this.head; p.next != nil; p = p.next {
-		// find
-		if p.next.value == value {
-			// delete
-			node := p.next
-			p.next = p.next.next
-			return node
-		}
-	}
-	return nil
+// Delete: Delete value
+func (this *ZSetV2[K, T]) Delete(value T) {
+
 }
 
-func (this *SortList[K, T]) Empty() bool {
-	return this.head == nil
-}
-
-func (this *SortList[K, T]) Len() int {
-	return this.len
+func (this *ZSetV2[K, T]) Len() int {
+	return len(this.m)
 }
 
 // Index: Get element by index
-func (this *SortList[K, T]) Index(index int) *linkNode[K, T] {
+func (this *ZSetV2[K, T]) Index(index int) T {
 	// overflow
 	if index >= this.Len() {
-		return nil
+		var a T
+		return a
 	}
 
 	p := this.head
@@ -107,11 +92,11 @@ func (this *SortList[K, T]) Index(index int) *linkNode[K, T] {
 	for ; start < index; start++ {
 		p = p.next
 	}
-	return p
+	return p.value
 }
 
 // Values: Return values list
-func (this *SortList[K, T]) Values() []T {
+func (this *ZSetV2[K, T]) Values() []T {
 	values := make([]T, this.Len())
 
 	p := this.head
@@ -123,7 +108,7 @@ func (this *SortList[K, T]) Values() []T {
 }
 
 // find the insert position
-func (this *SortList[K, T]) findPosition(value T) *linkNode[K, T] {
+func (this *ZSetV2[K, T]) findPosition(value T) *ZSetNode[K, T] {
 	// compare with mid
 	p := this.mid
 	if value < this.mid.value {
@@ -138,8 +123,8 @@ func (this *SortList[K, T]) findPosition(value T) *linkNode[K, T] {
 	return p
 }
 
-func (this *SortList[K, T]) Print() {
-	fmt.Printf("SortList len[%d] mid[%d]: ", this.len, this.midCount)
+func (this *ZSetV2[K, T]) Print() {
+	fmt.Printf("SortList len[%d] mid[%d]: ", this.Len(), this.midCount)
 	for p := this.head; p != nil; p = p.next {
 		fmt.Printf("%v ", p.value)
 	}
