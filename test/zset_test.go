@@ -10,7 +10,7 @@ import (
 const NUM = 49999
 
 func Benchmark_ZSet1(b *testing.B) {
-	s := structx.NewSkipList[int]()
+	s := structx.NewSkipList[struct{}, int]()
 	for i := 0; i < b.N; i++ {
 		s.Add(i)
 	}

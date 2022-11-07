@@ -2,20 +2,20 @@ package structx
 
 import "fmt"
 
-type zsetNode[K, V Value] struct {
+type zsetNode[K comparable, V Value] struct {
 	key   K
 	value V
 }
 
-type ZSet[K, V Value] struct {
-	zsl *Skiplist[V]
+type ZSet[K comparable, V Value] struct {
+	zsl *Skiplist[K, V]
 	m   Map[K, *zsetNode[K, V]]
 }
 
 // NewZSet
-func NewZSet[K, V Value]() *ZSet[K, V] {
+func NewZSet[K comparable, V Value]() *ZSet[K, V] {
 	return &ZSet[K, V]{
-		zsl: NewSkipList[V](),
+		zsl: NewSkipList[K, V](),
 		m:   Map[K, *zsetNode[K, V]]{},
 	}
 }
@@ -30,8 +30,8 @@ func (z *ZSet[K, V]) Set(key K, value V) bool {
 	}
 	if ok {
 		n.value = value
-		z.zsl.Delete(n.value)
-		z.zsl.Add(n.value)
+		z.zsl.Delete(n.value, key)
+		z.zsl.Add(n.value, key)
 
 	} else {
 		z.insertNode(key, value)
@@ -67,28 +67,30 @@ func (z *ZSet[K, V]) Delete(key K) bool {
 // GetByRank
 func (z *ZSet[K, V]) GetByRank(rank int) V {
 	p := z.zsl.head.forward[rank]
-	return p.val
+	return p.value
 }
 
 func (z *ZSet[K, V]) Len() int {
 	return len(z.m)
 }
 
-func (z *ZSet[K, V]) insertNode(key K, value V) {
+func (z *ZSet[K, V]) insertNode(key K, value V) *skiplistNode[K, V] {
 	z.m[key] = &zsetNode[K, V]{
 		key:   key,
 		value: value,
 	}
-	z.zsl.Add(value)
+	// add node
+	return z.zsl.Add(value, key)
 }
 
 func (z *ZSet[K, V]) deleteNode(key K, value V) {
 	delete(z.m, key)
-	z.zsl.Delete(value)
+	// delete node
+	z.zsl.Delete(value, key)
 }
 
 func (z *ZSet[K, V]) Print() {
 	for _, p := range z.zsl.head.forward {
-		fmt.Println(p.val)
+		fmt.Println(p.value)
 	}
 }

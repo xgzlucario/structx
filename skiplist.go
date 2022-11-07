@@ -5,26 +5,27 @@ import "math/rand"
 const maxLevel = 32
 const pFactor = 0.25
 
-type skiplistNode[T Value] struct {
-	val     T
-	forward []*skiplistNode[T]
+type skiplistNode[K comparable, V Value] struct {
+	key     K
+	value   V
+	forward []*skiplistNode[K, V]
 }
 
-type Skiplist[T Value] struct {
-	head  *skiplistNode[T]
+type Skiplist[K comparable, V Value] struct {
+	head  *skiplistNode[K, V]
 	level int
 }
 
 // NewSkipList
-func NewSkipList[T Value]() *Skiplist[T] {
-	return &Skiplist[T]{
-		head: &skiplistNode[T]{
-			forward: make([]*skiplistNode[T], maxLevel),
+func NewSkipList[K comparable, V Value]() *Skiplist[K, V] {
+	return &Skiplist[K, V]{
+		head: &skiplistNode[K, V]{
+			forward: make([]*skiplistNode[K, V], maxLevel),
 		},
 	}
 }
 
-func (Skiplist[T]) randomLevel() int {
+func (Skiplist[K, V]) randomLevel() int {
 	lv := 1
 	for lv < maxLevel && rand.Float64() < pFactor {
 		lv++
@@ -33,23 +34,27 @@ func (Skiplist[T]) randomLevel() int {
 }
 
 // Search
-func (s *Skiplist[T]) Search(target T) bool {
+func (s *Skiplist[K, V]) Search(value V, key ...K) bool {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
 		// 找到第 i 层小于且最接近 target 的元素
-		for p.forward[i] != nil && p.forward[i].val < target {
+		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
 	}
 
 	p = p.forward[0]
-	// 检测当前元素的值是否等于 target
-	return p != nil && p.val == target
+
+	// 检测当前元素的值是否等于 value
+	if len(key) > 0 {
+		return p != nil && p.value == value && p.key == key[0]
+	}
+	return p != nil && p.value == value
 }
 
 // Add
-func (s *Skiplist[T]) Add(value T) {
-	update := make([]*skiplistNode[T], maxLevel)
+func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
+	update := make([]*skiplistNode[K, V], maxLevel)
 	for i := range update {
 		update[i] = s.head
 	}
@@ -57,7 +62,7 @@ func (s *Skiplist[T]) Add(value T) {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
 		// 找到第 i 层小于且最接近 value 的元素
-		for p.forward[i] != nil && p.forward[i].val < value {
+		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
 		update[i] = p
@@ -68,9 +73,13 @@ func (s *Skiplist[T]) Add(value T) {
 		s.level = lv
 	}
 
-	newNode := &skiplistNode[T]{
-		val:     value,
-		forward: make([]*skiplistNode[T], lv),
+	// create node
+	newNode := &skiplistNode[K, V]{
+		value:   value,
+		forward: make([]*skiplistNode[K, V], lv),
+	}
+	if len(key) > 0 {
+		newNode.key = key[0]
 	}
 
 	for i, node := range update[:lv] {
@@ -78,16 +87,18 @@ func (s *Skiplist[T]) Add(value T) {
 		newNode.forward[i] = node.forward[i]
 		node.forward[i] = newNode
 	}
+
+	return newNode
 }
 
 // Delete
-func (s *Skiplist[T]) Delete(value T) bool {
-	update := make([]*skiplistNode[T], maxLevel)
+func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
+	update := make([]*skiplistNode[K, V], maxLevel)
 	p := s.head
 
 	for i := s.level - 1; i >= 0; i-- {
 		// 找到第 i 层小于且最接近 num 的元素
-		for p.forward[i] != nil && p.forward[i].val < value {
+		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
 		update[i] = p
@@ -95,7 +106,12 @@ func (s *Skiplist[T]) Delete(value T) bool {
 
 	p = p.forward[0]
 	// 如果值不存在则返回 false
-	if p == nil || p.val != value {
+	if p == nil || p.value != value {
+		return false
+	}
+
+	// key not equal
+	if len(key) > 0 && key[0] != p.key {
 		return false
 	}
 
