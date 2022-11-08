@@ -5,9 +5,13 @@ Data structures and algorithms implemented using generics.
 Currently, structx provides the following types of data structures to support generic types:
 
 - `List`
-- `Map`  `SyncMap`
+- `Map`
+- `SyncMap`
 - `LSet (ListSet)`
 - `ZSet (SortedSet)`
+- `Pool`
+- `Skiplist`
+- `Cache`
 
 ### LSet
 
