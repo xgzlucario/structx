@@ -4,10 +4,6 @@ import (
 	"fmt"
 )
 
-type Value interface {
-	string | float32 | float64 | int64 | int32 | int16 | int | uint32 | uint16 | uint | byte
-}
-
 type Array[T comparable] []T
 
 func (s Array[T]) Swap(i, j int) {

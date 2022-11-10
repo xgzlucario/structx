@@ -7,7 +7,7 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-const SUM = 10000
+const SUM = 1000
 
 func getMapSet() mapset.Set[int] {
 	s := mapset.NewSet[int]()
