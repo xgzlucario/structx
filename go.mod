@@ -6,3 +6,5 @@ require (
 	github.com/deckarep/golang-set/v2 v2.1.0
 	github.com/liyiheng/zset v0.0.0-20211012035528-6679b37ff27a
 )
+
+require github.com/huandu/skiplist v1.2.0 // indirect

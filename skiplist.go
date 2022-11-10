@@ -40,8 +40,23 @@ func (s *Skiplist[K, V]) Len() int {
 	return s.len
 }
 
-// Search
-func (s *Skiplist[K, V]) Search(value V, key ...K) bool {
+// Get: Get first element by key
+func (s *Skiplist[K, V]) Get(key K) (V, bool) {
+	var res V
+	var found bool
+
+	s.Range(0, -1, func(k K, v V) {
+		if key == k {
+			res = v
+			found = true
+			return
+		}
+	})
+	return res, found
+}
+
+// GetByValue: Get first element by value
+func (s *Skiplist[K, V]) GetByValue(value V) (K, bool) {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
 		// Find the element at level[i] that is less than and closest to value
@@ -51,12 +66,17 @@ func (s *Skiplist[K, V]) Search(value V, key ...K) bool {
 	}
 
 	p = p.forward[0]
-
-	// Check if the value of the current element is equal to value
-	if len(key) > 0 {
-		return p != nil && p.value == value && p.key == key[0]
+	// not found
+	if p == nil || p.value != value {
+		var k K
+		return k, false
 	}
-	return p != nil && p.value == value
+	return p.key, true
+}
+
+// GetByRank: Get the element by rank
+func (s *Skiplist[K, V]) GetByRank(rank int, f func(key K, value V)) {
+	s.Range(rank, rank, f)
 }
 
 // Add
@@ -187,9 +207,4 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 		}
 	}
 	read(s.head.forward[0])
-}
-
-// GetByRank
-func (s *Skiplist[K, V]) GetByRank(index int, f func(key K, value V)) {
-	s.Range(index, index, f)
 }
