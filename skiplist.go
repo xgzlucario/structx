@@ -1,8 +1,10 @@
 package structx
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
-const maxLevel = 32
+const maxLevel = 4
 const pFactor = 0.25
 
 type skiplistNode[K comparable, V Value] struct {
@@ -14,6 +16,7 @@ type skiplistNode[K comparable, V Value] struct {
 type Skiplist[K comparable, V Value] struct {
 	head  *skiplistNode[K, V]
 	level int
+	len   int
 }
 
 // NewSkipList
@@ -31,6 +34,10 @@ func (Skiplist[K, V]) randomLevel() int {
 		lv++
 	}
 	return lv
+}
+
+func (s *Skiplist[K, V]) Len() int {
+	return s.len
 }
 
 // Search
@@ -88,6 +95,7 @@ func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
 		node.forward[i] = newNode
 	}
 
+	s.len++
 	return newNode
 }
 
@@ -124,5 +132,48 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 	for s.level > 1 && s.head.forward[s.level-1] == nil {
 		s.level--
 	}
+
+	s.len--
 	return true
+}
+
+// Range
+func (s *Skiplist[K, V]) Range(start int, end int, f func(key K, value V)) {
+	if end == -1 {
+		end = s.Len()
+	}
+	var (
+		now  int
+		read func(p *skiplistNode[K, V])
+	)
+	read = func(p *skiplistNode[K, V]) {
+		if p != nil {
+			// index
+			if start <= now && now <= end {
+				f(p.key, p.value)
+			}
+			now++
+			// recursive
+			read(p.forward[0])
+		}
+	}
+	// from head level 0
+	read(s.head.forward[0])
+}
+
+// RangeByScores
+func (s *Skiplist[K, V]) RangeByScores(min V, max V, f func(key K, value V)) {
+	var read func(p *skiplistNode[K, V])
+
+	read = func(p *skiplistNode[K, V]) {
+		if p != nil {
+			if min <= p.value && p.value <= max {
+				f(p.key, p.value)
+			}
+			// recursive
+			read(p.forward[0])
+		}
+	}
+	// from head level 0
+	read(s.head.forward[0])
 }
