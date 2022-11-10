@@ -44,7 +44,7 @@ func (s *Skiplist[K, V]) Len() int {
 func (s *Skiplist[K, V]) Search(value V, key ...K) bool {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
-		// 找到第 i 层小于且最接近 target 的元素
+		// Find the element at level[i] that is less than and closest to value
 		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
@@ -52,7 +52,7 @@ func (s *Skiplist[K, V]) Search(value V, key ...K) bool {
 
 	p = p.forward[0]
 
-	// 检测当前元素的值是否等于 value
+	// Check if the value of the current element is equal to value
 	if len(key) > 0 {
 		return p != nil && p.value == value && p.key == key[0]
 	}
@@ -68,7 +68,7 @@ func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
 
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
-		// 找到第 i 层小于且最接近 value 的元素
+		// Find the element at level[i] that is less than and closest to value
 		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
@@ -90,7 +90,7 @@ func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
 	}
 
 	for i, node := range update[:lv] {
-		// 对第 i 层的状态进行更新，将当前元素的 forward 指向新的节点
+		// Update the state at level[i], pointing the forward of the current element to the new node
 		newNode.forward[i] = node.forward[i]
 		node.forward[i] = newNode
 	}
@@ -105,7 +105,7 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 	p := s.head
 
 	for i := s.level - 1; i >= 0; i-- {
-		// 找到第 i 层小于且最接近 num 的元素
+		// Find the element at level[i] that is less than and closest to value
 		for p.forward[i] != nil && p.forward[i].value < value {
 			p = p.forward[i]
 		}
@@ -113,7 +113,7 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 	}
 
 	p = p.forward[0]
-	// 如果值不存在则返回 false
+	// if nil or not found
 	if p == nil || p.value != value {
 		return false
 	}
@@ -124,11 +124,11 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 	}
 
 	for i := 0; i < s.level && update[i].forward[i] == p; i++ {
-		// 对第 i 层的状态进行更新，将 forward 指向被删除节点的下一跳
+		// Update the state of levek[i] to point forward to the next hop of the deleted node
 		update[i].forward[i] = p.forward[i]
 	}
 
-	// 更新当前的 level
+	// Update current level
 	for s.level > 1 && s.head.forward[s.level-1] == nil {
 		s.level--
 	}
@@ -157,7 +157,6 @@ func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
 			read(p.forward[0])
 		}
 	}
-	// from head level 0
 	read(s.head.forward[0])
 }
 
@@ -187,7 +186,6 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 			read(p.forward[0])
 		}
 	}
-	// from head level 0
 	read(s.head.forward[0])
 }
 
