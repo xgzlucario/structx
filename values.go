@@ -5,48 +5,40 @@ import (
 )
 
 type Value interface {
-	string | float32 | float64 | int64 | int32 | int | uint | byte
+	string | float32 | float64 | int64 | int32 | int16 | int | uint32 | uint16 | uint | byte
 }
 
-type Values[T comparable] []T
+type Array[T comparable] []T
 
-func (s Values[T]) Swap(i, j int) {
+func (s Array[T]) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s Values[T]) Len() int {
+func (s Array[T]) Len() int {
 	return len(s)
 }
 
-// func (s Values[T]) Less(i, j int) bool {
-// 	return s[i] < s[j]
-// }
-
-// func (s Values[T]) Sort() {
-// 	sort.Sort(s)
-// }
-
 // Top: move value to the top
-func (s Values[T]) Top(i int) {
+func (s Array[T]) Top(i int) {
 	for j := i; j > 0; j-- {
 		s.Swap(j, j-1)
 	}
 }
 
 // Bottom: move value to the bottom
-func (s Values[T]) Bottom(i int) {
+func (s Array[T]) Bottom(i int) {
 	for j := i; j < s.Len()-1; j++ {
 		s.Swap(j, j+1)
 	}
 }
 
 // Index: return the element of index
-func (this Values[T]) Index(index int) T {
+func (this Array[T]) Index(index int) T {
 	return this[index]
 }
 
 // Find: return the index of element
-func (this Values[T]) Find(elem T) int {
+func (this Array[T]) Find(elem T) int {
 	for i, v := range this {
 		if v == elem {
 			return i
@@ -57,17 +49,17 @@ func (this Values[T]) Find(elem T) int {
 
 // LShift: Shift all elements of the array left
 // exp: [1, 2, 3] => [2, 3, 1]
-func (s Values[T]) LShift() {
+func (s Array[T]) LShift() {
 	s.Bottom(0)
 }
 
 // RShift: Shift all elements of the array right
 // exp: [1, 2, 3] => [3, 1, 2]
-func (s Values[T]) RShift() {
+func (s Array[T]) RShift() {
 	s.Top(s.Len() - 1)
 }
 
-func (s Values[T]) Reverse() {
+func (s Array[T]) Reverse() {
 	l, r := 0, s.Len()-1
 	for l < r {
 		s.Swap(l, r)
@@ -76,12 +68,12 @@ func (s Values[T]) Reverse() {
 	}
 }
 
-func (this Values[T]) Range(f func(i int, v T)) {
+func (this Array[T]) Range(f func(i int, v T)) {
 	for i, v := range this {
 		f(i, v)
 	}
 }
 
-func (this Values[T]) Print() {
-	fmt.Println("values:", this)
+func (this Array[T]) Print() {
+	fmt.Println("Array:", this)
 }

@@ -138,7 +138,7 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 }
 
 // Range
-func (s *Skiplist[K, V]) Range(start int, end int, f func(key K, value V)) {
+func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
 	if end == -1 {
 		end = s.Len()
 	}
@@ -161,8 +161,21 @@ func (s *Skiplist[K, V]) Range(start int, end int, f func(key K, value V)) {
 	read(s.head.forward[0])
 }
 
+// RevRange
+func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V)) {
+	stack := NewList[V]()
+	// push
+	s.Range(start, end, func(key K, value V) {
+		stack.RPush(value)
+	})
+	// range
+	stack.Range(func(i int, v V) {
+		f(v)
+	})
+}
+
 // RangeByScores
-func (s *Skiplist[K, V]) RangeByScores(min V, max V, f func(key K, value V)) {
+func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 	var read func(p *skiplistNode[K, V])
 
 	read = func(p *skiplistNode[K, V]) {
@@ -176,4 +189,9 @@ func (s *Skiplist[K, V]) RangeByScores(min V, max V, f func(key K, value V)) {
 	}
 	// from head level 0
 	read(s.head.forward[0])
+}
+
+// GetByRank
+func (s *Skiplist[K, V]) GetByRank(index int, f func(key K, value V)) {
+	s.Range(index, index, f)
 }

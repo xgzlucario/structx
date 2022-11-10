@@ -1,25 +1,25 @@
 package structx
 
 type List[T comparable] struct {
-	Values[T]
+	Array[T]
 }
 
 // NewList: return new List
 func NewList[T comparable](values ...T) *List[T] {
-	return &List[T]{Values: values}
+	return &List[T]{Array: values}
 }
 
 func (ls *List[T]) LPush(values ...T) {
-	ls.Values = append(values, ls.Values...)
+	ls.Array = append(values, ls.Array...)
 }
 
 func (ls *List[T]) RPush(values ...T) {
-	ls.Values = append(ls.Values, values...)
+	ls.Array = append(ls.Array, values...)
 }
 
 func (ls *List[T]) LPop() T {
-	val := ls.Values[0]
-	ls.Values = ls.Values[1:]
+	val := ls.Array[0]
+	ls.Array = ls.Array[1:]
 	return val
 }
 
@@ -32,22 +32,22 @@ func (ls *List[T]) Insert(i int, value T) {
 		ls.RPush(value)
 
 	} else {
-		ls.Values = append(append(ls.Values[0:i], value), ls.Values[i:]...)
+		ls.Array = append(append(ls.Array[0:i], value), ls.Array[i:]...)
 	}
 }
 
 // RPop
 func (ls *List[T]) RPop() T {
-	val := ls.Values[ls.Len()-1]
-	ls.Values = ls.Values[:ls.Len()-1]
+	val := ls.Array[ls.Len()-1]
+	ls.Array = ls.Array[:ls.Len()-1]
 	return val
 }
 
 // RemoveElem
 func (ls *List[T]) RemoveElem(elem T) {
-	for i, v := range ls.Values {
+	for i, v := range ls.Array {
 		if v == elem {
-			ls.Values = append(ls.Values[:i], ls.Values[i+1:]...)
+			ls.Array = append(ls.Array[:i], ls.Array[i+1:]...)
 			return
 		}
 	}

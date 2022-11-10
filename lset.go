@@ -63,7 +63,7 @@ func (s *LSet[T]) Exist(key T) bool {
 }
 
 func (s *LSet[T]) Range(f func(k T)) {
-	for _, value := range s.ls.Values {
+	for _, value := range s.ls.Array {
 		f(value)
 	}
 }
@@ -72,11 +72,11 @@ func (s *LSet[T]) Copy() *LSet[T] {
 	newLSet := &LSet[T]{
 		m: make(Map[T, struct{}], s.Len()),
 		ls: &List[T]{
-			Values: make([]T, s.Len()),
+			Array: make([]T, s.Len()),
 		},
 	}
 	// copy list
-	copy(newLSet.ls.Values, s.ls.Values)
+	copy(newLSet.ls.Array, s.ls.Array)
 	// copy map
 	for _, v := range s.Values() {
 		s.m[v] = struct{}{}
@@ -136,8 +136,8 @@ func (s *LSet[T]) Len() int {
 	return s.ls.Len()
 }
 
-func (s *LSet[T]) Values() Values[T] {
-	return s.ls.Values
+func (s *LSet[T]) Values() Array[T] {
+	return s.ls.Array
 }
 
 func (s *LSet[T]) Print() {
