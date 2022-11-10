@@ -10,13 +10,13 @@ import (
 const NUM = 1000
 
 func Benchmark_ZSet1(b *testing.B) {
-	s := structx.NewSkipList[struct{}, int]()
+	s := structx.NewSkipList[int64, float64]()
 	for i := 0; i < NUM; i++ {
-		s.Add(i)
+		s.Add(float64(i))
 	}
 
 	for i := 0; i < b.N; i++ {
-		s.Range(0, -1, func(key struct{}, value int) {})
+		s.Range(0, -1, func(key int64, value float64) {})
 	}
 }
 

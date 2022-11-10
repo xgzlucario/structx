@@ -4,7 +4,7 @@ import (
 	"math/rand"
 )
 
-const maxLevel = 4
+const maxLevel = 32
 const pFactor = 0.25
 
 type skiplistNode[K comparable, V Value] struct {
