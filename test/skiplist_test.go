@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/huandu/skiplist"
@@ -29,5 +30,8 @@ func Benchmark_SkipList3(b *testing.B) {
 	ls.Add(56, "xgz3")
 	ls.Add(199, "xgz4")
 	ls.Add(116, "xgz5")
-	ls.Print()
+	ls.RangeByScores(60, 200, func(key string, value int) {
+		fmt.Println(key, value)
+	})
+	// ls.Print()
 }

@@ -166,22 +166,15 @@ func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
 	if end == -1 {
 		end = s.Len()
 	}
-	var (
-		now  int
-		read func(p *skiplistNode[K, V])
-	)
-	read = func(p *skiplistNode[K, V]) {
-		if p != nil {
-			// index
-			if start <= now && now <= end {
-				f(p.key, p.value)
-			}
-			now++
-			// recursive
-			read(p.forward[0])
+
+	p := s.head.forward[0]
+	for i := 0; p != nil; i++ {
+		// index
+		if start <= i && i <= end {
+			f(p.key, p.value)
 		}
+		p = p.forward[0]
 	}
-	read(s.head.forward[0])
 }
 
 // RevRange
@@ -199,18 +192,14 @@ func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V)) {
 
 // RangeByScores
 func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
-	var read func(p *skiplistNode[K, V])
-
-	read = func(p *skiplistNode[K, V]) {
-		if p != nil {
-			if min <= p.value && p.value <= max {
-				f(p.key, p.value)
-			}
-			// recursive
-			read(p.forward[0])
+	p := s.head.forward[0]
+	for p != nil {
+		// compare
+		if min <= p.value && p.value <= max {
+			f(p.key, p.value)
 		}
+		p = p.forward[0]
 	}
-	read(s.head.forward[0])
 }
 
 func (s *Skiplist[K, V]) Print() {

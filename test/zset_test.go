@@ -37,3 +37,15 @@ func Benchmark_ZSet3(b *testing.B) {
 		s.Range(0, -1, func(f float64, i1 int64, i2 interface{}) {})
 	}
 }
+
+// func Benchmark_ZSet4(b *testing.B) {
+// 	s := structx.NewZSet[string, int]()
+// 	s.Incr("asd", 123)
+// 	s.Incr("rr", 12)
+// 	s.Incr("gg", 173)
+// 	s.Incr("ww", 14)
+// 	s.Incr("ww", 17)
+// 	s.Print()
+
+// 	fmt.Println(s.GetByRank(2))
+// }
