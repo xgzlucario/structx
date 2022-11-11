@@ -53,24 +53,67 @@ func (z *ZSet[K, V]) Incr(key K, value V) V {
 	return n.value
 }
 
-// Delete: delete node by key
-func (z *ZSet[K, V]) Delete(key K) bool {
-	n, ok := z.m[key]
-	if ok {
+// Delete: delete keys
+func (z *ZSet[K, V]) Delete(keys ...K) error {
+	for _, key := range keys {
+		n, ok := z.m[key]
+		if !ok {
+			return errKeyNotFound(key)
+		}
 		z.deleteNode(n.key, n.value)
 	}
-	return ok
+	return nil
 }
 
 // GetByRank: get value by rank
-func (z *ZSet[K, V]) GetByRank(rank int) (K, V) {
+func (z *ZSet[K, V]) GetByRank(rank int) (K, V, error) {
 	var k K
 	var v V
+
+	if rank < 0 || rank > z.Len() {
+		return k, v, errOutOfBounds(rank)
+	}
+
 	z.zsl.GetByRank(rank, func(key K, value V) {
 		k = key
 		v = value
 	})
-	return k, v
+	return k, v, nil
+}
+
+// GetScore
+func (z *ZSet[K, V]) GetScore(key K) (*V, error) {
+	node, ok := z.m[key]
+	if !ok {
+		return nil, errKeyNotFound(key)
+	}
+	return &node.value, nil
+}
+
+// Copy
+func (z *ZSet[K, V]) Copy() *ZSet[K, V] {
+	newZSet := NewZSet[K, V]()
+	z.Range(0, -1, func(key K, value V) {
+		newZSet.Set(key, value)
+	})
+	return z
+}
+
+// Union
+func (z *ZSet[K, V]) Union(target *ZSet[K, V]) {
+	target.Range(0, -1, func(key K, value V) {
+		z.Incr(key, value)
+	})
+}
+
+// Range
+func (z *ZSet[K, V]) Range(start, end int, f func(key K, value V)) {
+	z.zsl.Range(start, end, f)
+}
+
+// RangeByScores
+func (z *ZSet[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
+	z.zsl.RangeByScores(min, max, f)
 }
 
 func (z *ZSet[K, V]) Len() int {
@@ -83,17 +126,16 @@ func (z *ZSet[K, V]) insertNode(key K, value V) *skiplistNode[K, V] {
 		key:   key,
 		value: value,
 	}
-	// add zsl node
 	return z.zsl.Add(value, key)
 }
 
 // make sure that key exist!
 func (z *ZSet[K, V]) deleteNode(key K, value V) {
 	delete(z.m, key)
-	// delete zsl node
 	z.zsl.Delete(value, key)
 }
 
+// DEBUG
 func (z *ZSet[K, V]) Print() {
 	z.zsl.Print()
 }

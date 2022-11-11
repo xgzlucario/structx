@@ -76,12 +76,10 @@ func (c *Cache[K, V]) startGC() {
 		default:
 		}
 
-		if gcSet.Len() > 0 {
-			key, ttl := gcSet.GetByRank(0)
-			// expired
-			if ttl < time.Now().Unix() {
-				gcSet.Delete(key)
-			}
+		key, ttl, err := gcSet.GetByRank(0)
+		// expired
+		if err == nil && ttl < time.Now().Unix() {
+			gcSet.Delete(key)
 		}
 	}
 }

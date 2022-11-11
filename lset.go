@@ -124,10 +124,6 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	return newSet
 }
 
-// func (s *LSet[T]) Sort() {
-// 	s.ls.Sort()
-// }
-
 func (s *LSet[T]) Reverse() {
 	s.ls.Reverse()
 }

@@ -202,6 +202,29 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 	}
 }
 
+// GetKeys: return all keys
+func (s *Skiplist[K, V]) GetKeys() []K {
+	arr := make([]K, s.Len())
+	var i int
+
+	s.Range(0, -1, func(key K, _ V) {
+		arr[i] = key
+	})
+	return arr
+}
+
+// GetValues: return all values
+func (s *Skiplist[K, V]) GetValues() []V {
+	arr := make([]V, s.Len())
+	var i int
+
+	s.Range(0, -1, func(_ K, value V) {
+		arr[i] = value
+	})
+	return arr
+}
+
+// DEBUG
 func (s *Skiplist[K, V]) Print() {
 	fmt.Println("====== start ======")
 	s.Range(0, -1, func(key K, value V) {
