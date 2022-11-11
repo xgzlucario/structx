@@ -1,7 +1,5 @@
 package structx
 
-import "fmt"
-
 type zslNode[K comparable, V Value] struct {
 	key   K
 	value V
@@ -65,9 +63,14 @@ func (z *ZSet[K, V]) Delete(key K) bool {
 }
 
 // GetByRank: get value by rank
-func (z *ZSet[K, V]) GetByRank(rank int) V {
-	p := z.zsl.head.forward[rank]
-	return p.value
+func (z *ZSet[K, V]) GetByRank(rank int) (K, V) {
+	var k K
+	var v V
+	z.zsl.GetByRank(rank, func(key K, value V) {
+		k = key
+		v = value
+	})
+	return k, v
 }
 
 func (z *ZSet[K, V]) Len() int {
@@ -92,7 +95,5 @@ func (z *ZSet[K, V]) deleteNode(key K, value V) {
 }
 
 func (z *ZSet[K, V]) Print() {
-	for k, v := range z.m {
-		fmt.Println(k, v.value)
-	}
+	z.zsl.Print()
 }

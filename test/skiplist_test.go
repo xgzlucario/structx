@@ -20,3 +20,14 @@ func Benchmark_SkipList2(b *testing.B) {
 		list.Set(i, struct{}{})
 	}
 }
+
+func Benchmark_SkipList3(b *testing.B) {
+	ls := structx.NewSkipList[string, int]()
+	ls.Add(123, "xgz")
+	ls.Add(12, "xgz1")
+	ls.Add(124, "xgz2")
+	ls.Add(56, "xgz3")
+	ls.Add(199, "xgz4")
+	ls.Add(116, "xgz5")
+	ls.Print()
+}

@@ -1,6 +1,7 @@
 package structx
 
 import (
+	"fmt"
 	"math/rand"
 )
 
@@ -30,10 +31,13 @@ func NewSkipList[K comparable, V Value]() *Skiplist[K, V] {
 
 func (Skiplist[K, V]) randomLevel() int {
 	lv := 1
-	for lv < maxLevel && rand.Float64() < pFactor {
+	for float32(rand.Int31()&0xFFFF) < (pFactor * 0xFFFF) {
 		lv++
 	}
-	return lv
+	if lv < maxLevel {
+		return lv
+	}
+	return maxLevel
 }
 
 func (s *Skiplist[K, V]) Len() int {
@@ -207,4 +211,12 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 		}
 	}
 	read(s.head.forward[0])
+}
+
+func (s *Skiplist[K, V]) Print() {
+	fmt.Println("====== start ======")
+	s.Range(0, -1, func(key K, value V) {
+		fmt.Printf("%v -> %v\n", key, value)
+	})
+	fmt.Println("======= end =======")
 }
