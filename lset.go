@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/bytedance/sonic"
 )
 
 /*
@@ -171,6 +173,22 @@ func (s *LSet[T]) Len() int {
 // Members
 func (s *LSet[T]) Members() Array[T] {
 	return s.ls.Array
+}
+
+// Marshal to bytes
+func (s *LSet[T]) Marshal() ([]byte, error) {
+	return sonic.Marshal(s.Members())
+}
+
+// Scan from bytes
+func (s *LSet[T]) Scan(src []byte) error {
+	var ls []T
+	err := sonic.Unmarshal(src, &ls)
+	if err != nil {
+		return err
+	}
+	*s = *NewLSet(ls...)
+	return err
 }
 
 // Print
