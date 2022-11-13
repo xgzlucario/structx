@@ -96,21 +96,22 @@ func (z *ZSet[K, V]) GetScore(key K) (V, error) {
 // Copy
 func (z *ZSet[K, V]) Copy() *ZSet[K, V] {
 	newZSet := NewZSet[K, V]()
-	z.Range(0, -1, func(key K, value V) {
-		newZSet.Set(key, value)
+	z.Range(0, -1, func(key K, value V) bool {
+		return newZSet.Set(key, value)
 	})
 	return z
 }
 
 // Union
 func (z *ZSet[K, V]) Union(target *ZSet[K, V]) {
-	target.Range(0, -1, func(key K, value V) {
+	target.Range(0, -1, func(key K, value V) bool {
 		z.Incr(key, value)
+		return false
 	})
 }
 
 // Range
-func (z *ZSet[K, V]) Range(start, end int, f func(key K, value V)) {
+func (z *ZSet[K, V]) Range(start, end int, f func(key K, value V) bool) {
 	z.zsl.Range(start, end, f)
 }
 

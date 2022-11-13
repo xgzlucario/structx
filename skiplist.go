@@ -167,7 +167,7 @@ func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
 }
 
 // Range
-func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
+func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V) bool) {
 	if end == -1 {
 		end = s.Len()
 	}
@@ -175,22 +175,25 @@ func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
 	for i := 0; p != nil; i++ {
 		// index
 		if start <= i && i <= end {
-			f(p.key, p.value)
+			if f(p.key, p.value) {
+				return
+			}
 		}
 		p = p.forward[0]
 	}
 }
 
 // RevRange
-func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V)) {
+func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V) bool) {
 	stack := NewList[V]()
 	// push
-	s.Range(start, end, func(key K, value V) {
+	s.Range(start, end, func(key K, value V) bool {
 		stack.RPush(value)
+		return false
 	})
 	// range
-	stack.Range(func(i int, v V) {
-		f(v)
+	stack.Range(func(i int, v V) bool {
+		return f(v)
 	})
 }
 
@@ -209,8 +212,9 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 func (s *Skiplist[K, V]) GetKeys() []K {
 	arr := make([]K, s.Len())
 	var i int
-	s.Range(0, -1, func(key K, _ V) {
+	s.Range(0, -1, func(key K, _ V) bool {
 		arr[i] = key
+		return false
 	})
 	return arr
 }
@@ -219,8 +223,9 @@ func (s *Skiplist[K, V]) GetKeys() []K {
 func (s *Skiplist[K, V]) GetValues() []V {
 	arr := make([]V, s.Len())
 	var i int
-	s.Range(0, -1, func(_ K, value V) {
+	s.Range(0, -1, func(_ K, value V) bool {
 		arr[i] = value
+		return false
 	})
 	return arr
 }
@@ -228,8 +233,9 @@ func (s *Skiplist[K, V]) GetValues() []V {
 // DEBUG
 func (s *Skiplist[K, V]) Print() {
 	fmt.Println("====== start ======")
-	s.Range(0, -1, func(key K, value V) {
+	s.Range(0, -1, func(key K, value V) bool {
 		fmt.Printf("%v -> %v\n", key, value)
+		return false
 	})
 	fmt.Println("======= end =======")
 }
