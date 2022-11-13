@@ -104,7 +104,7 @@ func (z *ZSet[K, V]) Range(start, end int, f func(key K, value V) bool) {
 }
 
 // RangeByScores
-func (z *ZSet[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
+func (z *ZSet[K, V]) RangeByScores(min, max V, f func(key K, value V) bool) {
 	z.zsl.RangeByScores(min, max, f)
 }
 

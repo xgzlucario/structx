@@ -88,14 +88,11 @@ func (s *Skiplist[K, V]) GetByRank(rank int) (K, V, error) {
 	return s.head.key, s.head.value, errOutOfBounds(rank)
 }
 
-func (s *Skiplist[K, V]) findClosestNode(key K, value V, update []*skiplistNode[K, V]) *skiplistNode[K, V] {
+func (s *Skiplist[K, V]) findClosestNode(k K, v V, update []*skiplistNode[K, V]) *skiplistNode[K, V] {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
 		// Find the element at level[i] that closest to value
-		for p.forward[i] != nil &&
-			(p.forward[i].value < value ||
-				(p.forward[i].value == value &&
-					p.forward[i].key != key)) {
+		for p.forward[i] != nil && (p.forward[i].value < v || (p.forward[i].value == v && p.forward[i].key < k)) {
 			p = p.forward[i]
 		}
 		update[i] = p
@@ -192,11 +189,13 @@ func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V) bool) {
 }
 
 // RangeByScores
-func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
+func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V) bool) {
 	p := s.head.forward[0]
 	for p != nil {
 		if min <= p.value && p.value <= max {
-			f(p.key, p.value)
+			if f(p.key, p.value) {
+				return
+			}
 		}
 		p = p.forward[0]
 	}
