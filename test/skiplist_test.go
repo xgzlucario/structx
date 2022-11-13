@@ -35,3 +35,16 @@ func Benchmark_SkipList3(b *testing.B) {
 	})
 	// ls.Print()
 }
+
+func NewArray(arr ...int) []int {
+	return arr
+}
+
+func Benchmark_SkipList4(b *testing.B) {
+	s := []int{1, 2, 3, 4, 5}
+	s1 := NewArray(s...)
+
+	s = append(s, 6)
+	s1 = append(s1, 7)
+	fmt.Println(s, s1)
+}

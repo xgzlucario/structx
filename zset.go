@@ -5,6 +5,14 @@ type zslNode[K comparable, V Value] struct {
 	value V
 }
 
+func (z *zslNode[K, V]) Key() K {
+	return z.key
+}
+
+func (z *zslNode[K, V]) Value() V {
+	return z.value
+}
+
 type ZSet[K comparable, V Value] struct {
 	zsl *Skiplist[K, V]
 	m   Map[K, *zslNode[K, V]]
@@ -67,27 +75,22 @@ func (z *ZSet[K, V]) Delete(keys ...K) error {
 
 // GetByRank: get value by rank
 func (z *ZSet[K, V]) GetByRank(rank int) (K, V, error) {
-	var k K
-	var v V
-
 	if rank < 0 || rank > z.Len() {
+		var k K
+		var v V
 		return k, v, errOutOfBounds(rank)
 	}
-
-	z.zsl.GetByRank(rank, func(key K, value V) {
-		k = key
-		v = value
-	})
-	return k, v, nil
+	return z.zsl.GetByRank(rank)
 }
 
 // GetScore
-func (z *ZSet[K, V]) GetScore(key K) (*V, error) {
+func (z *ZSet[K, V]) GetScore(key K) (V, error) {
 	node, ok := z.m[key]
 	if !ok {
-		return nil, errKeyNotFound(key)
+		var v V
+		return v, errKeyNotFound(key)
 	}
-	return &node.value, nil
+	return node.value, nil
 }
 
 // Copy

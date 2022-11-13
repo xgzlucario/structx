@@ -10,7 +10,7 @@ import (
 const SUM = 1000
 
 func getMapSet() mapset.Set[int] {
-	s := mapset.NewSet[int]()
+	s := mapset.NewThreadUnsafeSet[int]()
 	for i := 0; i < SUM; i++ {
 		s.Add(i)
 	}
@@ -38,22 +38,24 @@ func Benchmark_MapSetRange(b *testing.B) {
 func Benchmark_LSetRange(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
-		s.Range(func(k int) {})
+		s.Range(func(k int) bool {
+			return false
+		})
 	}
 }
 
-// ============ Remove ============
-func Benchmark_MapSetRemove(b *testing.B) {
+// ============ Rop ============
+func Benchmark_MapSetPop(b *testing.B) {
 	s := getMapSet()
 	for i := 0; i < b.N; i++ {
-		s.Remove(i)
+		s.Pop()
 	}
 }
 
-func Benchmark_LSetRemove(b *testing.B) {
+func Benchmark_LSetRop(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
-		s.Remove(i)
+		s.RandomPop()
 	}
 }
 

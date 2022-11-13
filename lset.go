@@ -2,10 +2,12 @@ package structx
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 /*
-LSet (ListSet): map + list (not thread safe)
+LSet (ListSet): map + list structure
 ListSet has a significant performance improvement over MapSet
 in the Range Union Intersect function
 */
@@ -57,28 +59,29 @@ func (s *LSet[T]) remove(key T) {
 	s.ls.RemoveElem(key)
 }
 
+// Exist
 func (s *LSet[T]) Exist(key T) bool {
 	_, ok := s.m[key]
 	return ok
 }
 
-func (s *LSet[T]) Range(f func(k T)) {
-	for _, value := range s.ls.Array {
-		f(value)
+// Range
+func (s *LSet[T]) Range(f func(k T) bool) {
+	for _, v := range s.ls.Array {
+		if f(v) {
+			return
+		}
 	}
 }
 
+// Copy
 func (s *LSet[T]) Copy() *LSet[T] {
 	newLSet := &LSet[T]{
-		m: make(Map[T, struct{}], s.Len()),
-		ls: &List[T]{
-			Array: make([]T, s.Len()),
-		},
+		m:  make(Map[T, struct{}], s.Len()),
+		ls: NewList(s.ls.Array...),
 	}
-	// copy list
-	copy(newLSet.ls.Array, s.ls.Array)
 	// copy map
-	for _, v := range s.Values() {
+	for _, v := range s.Members() {
 		s.m[v] = struct{}{}
 	}
 	return newLSet
@@ -89,8 +92,9 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy max lset
 	max = max.Copy()
-	min.Range(func(k T) {
+	min.Range(func(k T) bool {
 		max.Add(k)
+		return false
 	})
 	return max
 }
@@ -100,10 +104,11 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy min lset
 	min = min.Copy()
-	min.Range(func(k T) {
+	min.Range(func(k T) bool {
 		if !max.Exist(k) {
 			min.remove(k)
 		}
+		return false
 	})
 	return min
 }
@@ -111,33 +116,66 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 // Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	newSet := NewLSet[T]()
-	this.Range(func(k T) {
+	this.Range(func(k T) bool {
 		if !t.Exist(k) {
 			newSet.add(k)
 		}
+		return false
 	})
-	t.Range(func(k T) {
+	t.Range(func(k T) bool {
 		if !this.Exist(k) {
 			newSet.add(k)
 		}
+		return false
 	})
 	return newSet
 }
 
-func (s *LSet[T]) Reverse() {
-	s.ls.Reverse()
+// LPop
+func (this *LSet[T]) LPop() (v T, ok bool) {
+	if this.Len() > 0 {
+		v = this.ls.LPop()
+		delete(this.m, v)
+		ok = true
+	}
+	return
 }
 
+// RPop
+func (this *LSet[T]) RPop() (v T, ok bool) {
+	if this.Len() > 0 {
+		v = this.ls.RPop()
+		delete(this.m, v)
+		ok = true
+	}
+	return
+}
+
+// RandomPop
+func (this *LSet[T]) RandomPop() (v T, ok bool) {
+	if this.Len() > 0 {
+		rand.Seed(time.Now().UnixNano())
+		index := rand.Intn(this.Len())
+
+		this.ls.Bottom(index)
+		return this.RPop()
+	}
+	return
+}
+
+// Len
 func (s *LSet[T]) Len() int {
 	return s.ls.Len()
 }
 
-func (s *LSet[T]) Values() Array[T] {
+// Members
+func (s *LSet[T]) Members() Array[T] {
 	return s.ls.Array
 }
 
+// Print
 func (s *LSet[T]) Print() {
-	fmt.Println("lset:", s.Values())
+	fmt.Printf("lset[%d]: %v\n", s.Len(), s.Members())
 }
 
 // Compare two lset length and return (*min, *max)

@@ -46,17 +46,15 @@ func (s *Skiplist[K, V]) Len() int {
 
 // Get: Get first element by key
 func (s *Skiplist[K, V]) Get(key K) (V, bool) {
-	var res V
-	var found bool
-
-	s.Range(0, -1, func(k K, v V) {
-		if key == k {
-			res = v
-			found = true
-			return
+	p := s.head.forward[0]
+	for p != nil {
+		if p.key == key {
+			return p.value, true
 		}
-	})
-	return res, found
+		p = p.forward[0]
+	}
+
+	return s.head.value, false
 }
 
 // GetByValue: Get first element by value
@@ -72,15 +70,22 @@ func (s *Skiplist[K, V]) GetByValue(value V) (K, bool) {
 	p = p.forward[0]
 	// not found
 	if p == nil || p.value != value {
-		var k K
-		return k, false
+		return s.head.key, false
 	}
 	return p.key, true
 }
 
 // GetByRank: Get the element by rank
-func (s *Skiplist[K, V]) GetByRank(rank int, f func(key K, value V)) {
-	s.Range(rank, rank, f)
+func (s *Skiplist[K, V]) GetByRank(rank int) (K, V, error) {
+	p := s.head.forward[0]
+	for i := 0; p != nil; i++ {
+		if rank == i {
+			return p.key, p.value, nil
+		}
+		p = p.forward[0]
+	}
+
+	return s.head.key, s.head.value, errOutOfBounds(rank)
 }
 
 // Add
@@ -166,7 +171,6 @@ func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V)) {
 	if end == -1 {
 		end = s.Len()
 	}
-
 	p := s.head.forward[0]
 	for i := 0; p != nil; i++ {
 		// index
@@ -194,7 +198,6 @@ func (s *Skiplist[K, V]) RevRange(start, end int, f func(value V)) {
 func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 	p := s.head.forward[0]
 	for p != nil {
-		// compare
 		if min <= p.value && p.value <= max {
 			f(p.key, p.value)
 		}
@@ -206,7 +209,6 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V)) {
 func (s *Skiplist[K, V]) GetKeys() []K {
 	arr := make([]K, s.Len())
 	var i int
-
 	s.Range(0, -1, func(key K, _ V) {
 		arr[i] = key
 	})
@@ -217,7 +219,6 @@ func (s *Skiplist[K, V]) GetKeys() []K {
 func (s *Skiplist[K, V]) GetValues() []V {
 	arr := make([]V, s.Len())
 	var i int
-
 	s.Range(0, -1, func(_ K, value V) {
 		arr[i] = value
 	})
