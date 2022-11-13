@@ -11,5 +11,4 @@ func Benchmark_List1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ls.RPush(i)
 	}
-	structx.Max(ls.Array...)
 }

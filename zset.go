@@ -1,25 +1,17 @@
 package structx
 
-type zslNode[K comparable, V Value] struct {
+type zslNode[K, V Value] struct {
 	key   K
 	value V
 }
 
-func (z *zslNode[K, V]) Key() K {
-	return z.key
-}
-
-func (z *zslNode[K, V]) Value() V {
-	return z.value
-}
-
-type ZSet[K comparable, V Value] struct {
+type ZSet[K, V Value] struct {
 	zsl *Skiplist[K, V]
 	m   Map[K, *zslNode[K, V]]
 }
 
 // NewZSet
-func NewZSet[K comparable, V Value]() *ZSet[K, V] {
+func NewZSet[K, V Value]() *ZSet[K, V] {
 	return &ZSet[K, V]{
 		zsl: NewSkipList[K, V](),
 		m:   Map[K, *zslNode[K, V]]{},
@@ -29,15 +21,14 @@ func NewZSet[K comparable, V Value]() *ZSet[K, V] {
 // Set: set key and value
 func (z *ZSet[K, V]) Set(key K, value V) bool {
 	n, ok := z.m[key]
-
-	// value not change
-	if value == n.value {
-		return false
-	}
 	if ok {
+		// value not change
+		if value == n.value {
+			return false
+		}
 		n.value = value
-		z.zsl.Delete(n.value, key)
-		z.zsl.Add(n.value, key)
+		z.zsl.Delete(key, n.value)
+		z.zsl.Add(key, n.value)
 
 	} else {
 		z.insertNode(key, value)
@@ -54,9 +45,9 @@ func (z *ZSet[K, V]) Incr(key K, value V) V {
 		return value
 	}
 	// exist
-	z.zsl.Delete(n.value, key)
+	z.zsl.Delete(key, n.value)
 	n.value += value
-	z.zsl.Add(n.value, key)
+	z.zsl.Add(key, n.value)
 
 	return n.value
 }
@@ -74,20 +65,17 @@ func (z *ZSet[K, V]) Delete(keys ...K) error {
 }
 
 // GetByRank: get value by rank
-func (z *ZSet[K, V]) GetByRank(rank int) (K, V, error) {
+func (z *ZSet[K, V]) GetByRank(rank int) (k K, v V, err error) {
 	if rank < 0 || rank > z.Len() {
-		var k K
-		var v V
 		return k, v, errOutOfBounds(rank)
 	}
 	return z.zsl.GetByRank(rank)
 }
 
 // GetScore
-func (z *ZSet[K, V]) GetScore(key K) (V, error) {
+func (z *ZSet[K, V]) GetScore(key K) (v V, err error) {
 	node, ok := z.m[key]
 	if !ok {
-		var v V
 		return v, errKeyNotFound(key)
 	}
 	return node.value, nil
@@ -130,13 +118,13 @@ func (z *ZSet[K, V]) insertNode(key K, value V) *skiplistNode[K, V] {
 		key:   key,
 		value: value,
 	}
-	return z.zsl.Add(value, key)
+	return z.zsl.Add(key, value)
 }
 
 // make sure that key exist!
 func (z *ZSet[K, V]) deleteNode(key K, value V) {
 	delete(z.m, key)
-	z.zsl.Delete(value, key)
+	z.zsl.Delete(key, value)
 }
 
 // DEBUG

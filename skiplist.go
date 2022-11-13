@@ -8,20 +8,20 @@ import (
 const maxLevel = 32
 const pFactor = 0.25
 
-type skiplistNode[K comparable, V Value] struct {
+type skiplistNode[K, V Value] struct {
 	key     K
 	value   V
 	forward []*skiplistNode[K, V]
 }
 
-type Skiplist[K comparable, V Value] struct {
+type Skiplist[K, V Value] struct {
 	head  *skiplistNode[K, V]
 	level int
 	len   int
 }
 
 // NewSkipList
-func NewSkipList[K comparable, V Value]() *Skiplist[K, V] {
+func NewSkipList[K, V Value]() *Skiplist[K, V] {
 	return &Skiplist[K, V]{
 		head: &skiplistNode[K, V]{
 			forward: make([]*skiplistNode[K, V], maxLevel),
@@ -62,7 +62,7 @@ func (s *Skiplist[K, V]) GetByValue(value V) (K, bool) {
 	p := s.head
 	for i := s.level - 1; i >= 0; i-- {
 		// Find the element at level[i] that is less than and closest to value
-		for p.forward[i] != nil && p.forward[i].value < value {
+		for p.forward[i] != nil && (p.forward[i].value < value) {
 			p = p.forward[i]
 		}
 	}
@@ -88,21 +88,29 @@ func (s *Skiplist[K, V]) GetByRank(rank int) (K, V, error) {
 	return s.head.key, s.head.value, errOutOfBounds(rank)
 }
 
+func (s *Skiplist[K, V]) findClosestNode(key K, value V, update []*skiplistNode[K, V]) *skiplistNode[K, V] {
+	p := s.head
+	for i := s.level - 1; i >= 0; i-- {
+		// Find the element at level[i] that closest to value
+		for p.forward[i] != nil &&
+			(p.forward[i].value < value ||
+				(p.forward[i].value == value &&
+					p.forward[i].key != key)) {
+			p = p.forward[i]
+		}
+		update[i] = p
+	}
+	return p
+}
+
 // Add
-func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
+func (s *Skiplist[K, V]) Add(key K, value V) *skiplistNode[K, V] {
 	update := make([]*skiplistNode[K, V], maxLevel)
 	for i := range update {
 		update[i] = s.head
 	}
 
-	p := s.head
-	for i := s.level - 1; i >= 0; i-- {
-		// Find the element at level[i] that is less than and closest to value
-		for p.forward[i] != nil && p.forward[i].value < value {
-			p = p.forward[i]
-		}
-		update[i] = p
-	}
+	s.findClosestNode(key, value, update)
 
 	lv := s.randomLevel()
 	if lv > s.level {
@@ -111,11 +119,9 @@ func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
 
 	// create node
 	newNode := &skiplistNode[K, V]{
+		key:     key,
 		value:   value,
 		forward: make([]*skiplistNode[K, V], lv),
-	}
-	if len(key) > 0 {
-		newNode.key = key[0]
 	}
 
 	for i, node := range update[:lv] {
@@ -129,26 +135,14 @@ func (s *Skiplist[K, V]) Add(value V, key ...K) *skiplistNode[K, V] {
 }
 
 // Delete
-func (s *Skiplist[K, V]) Delete(value V, key ...K) bool {
+func (s *Skiplist[K, V]) Delete(key K, value V) bool {
 	update := make([]*skiplistNode[K, V], maxLevel)
-	p := s.head
 
-	for i := s.level - 1; i >= 0; i-- {
-		// Find the element at level[i] that is less than and closest to value
-		for p.forward[i] != nil && p.forward[i].value < value {
-			p = p.forward[i]
-		}
-		update[i] = p
-	}
+	p := s.findClosestNode(key, value, update)
 
 	p = p.forward[0]
 	// if nil or not found
 	if p == nil || p.value != value {
-		return false
-	}
-
-	// key not equal
-	if len(key) > 0 && key[0] != p.key {
 		return false
 	}
 

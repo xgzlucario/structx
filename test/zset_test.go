@@ -12,7 +12,7 @@ const NUM = 1000
 func Benchmark_ZSet1(b *testing.B) {
 	s := structx.NewSkipList[int64, float64]()
 	for i := 0; i < NUM; i++ {
-		s.Add(float64(i))
+		s.Add(0, float64(i))
 	}
 
 	for i := 0; i < b.N; i++ {
