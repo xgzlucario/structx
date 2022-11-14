@@ -7,7 +7,7 @@ import (
 type Map[K comparable, V any] map[K]V
 
 func NewMap[K comparable, V any]() Map[K, V] {
-	return make(Map[K, V])
+	return Map[K, V]{}
 }
 
 // SynMap: generic version of sync.Map
@@ -41,11 +41,13 @@ func (m *SyncMap[K, V]) Delete(key K) {
 	delete(m.m, key)
 }
 
-func (m *SyncMap[K, V]) Range(f func(k K, v V)) {
+func (m *SyncMap[K, V]) Range(f func(k K, v V) bool) {
 	m.RLock()
 	defer m.RUnlock()
 	for k, v := range m.m {
-		f(k, v)
+		if f(k, v) {
+			return
+		}
 	}
 }
 

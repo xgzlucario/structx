@@ -29,7 +29,8 @@ func NewSkipList[K, V Value]() *Skiplist[K, V] {
 	}
 }
 
-func (Skiplist[K, V]) randomLevel() int {
+// get random level
+func randomLevel() int {
 	lv := 1
 	for float32(rand.Int31()&0xFFFF) < (pFactor * 0xFFFF) {
 		lv++
@@ -44,39 +45,8 @@ func (s *Skiplist[K, V]) Len() int {
 	return s.len
 }
 
-// Get: Get first element by key
-func (s *Skiplist[K, V]) Get(key K) (V, bool) {
-	p := s.head.forward[0]
-	for p != nil {
-		if p.key == key {
-			return p.value, true
-		}
-		p = p.forward[0]
-	}
-
-	return s.head.value, false
-}
-
-// GetByValue: Get first element by value
-func (s *Skiplist[K, V]) GetByValue(value V) (K, bool) {
-	p := s.head
-	for i := s.level - 1; i >= 0; i-- {
-		// Find the element at level[i] that is less than and closest to value
-		for p.forward[i] != nil && (p.forward[i].value < value) {
-			p = p.forward[i]
-		}
-	}
-
-	p = p.forward[0]
-	// not found
-	if p == nil || p.value != value {
-		return s.head.key, false
-	}
-	return p.key, true
-}
-
 // GetByRank: Get the element by rank
-func (s *Skiplist[K, V]) GetByRank(rank int) (K, V, error) {
+func (s *Skiplist[K, V]) GetByRank(rank int) (k K, v V, err error) {
 	p := s.head
 	for i := 0; p != nil; i++ {
 		if rank == i {
@@ -85,7 +55,7 @@ func (s *Skiplist[K, V]) GetByRank(rank int) (K, V, error) {
 		p = p.forward[0]
 	}
 
-	return s.head.key, s.head.value, errOutOfBounds(rank)
+	return k, v, errOutOfBounds(rank)
 }
 
 func (s *Skiplist[K, V]) findClosestNode(k K, v V, update []*skiplistNode[K, V]) *skiplistNode[K, V] {
@@ -93,10 +63,7 @@ func (s *Skiplist[K, V]) findClosestNode(k K, v V, update []*skiplistNode[K, V])
 	for i := s.level - 1; i >= 0; i-- {
 		// Find the elem at level[i] that closest to value and key
 		// node.value < v || (node.value == v && node.key < k)
-		for p.forward[i] != nil &&
-			(p.forward[i].value < v ||
-				(p.forward[i].value == v &&
-					p.forward[i].key < k)) {
+		for p.forward[i] != nil && (p.forward[i].value < v || (p.forward[i].value == v && p.forward[i].key < k)) {
 			p = p.forward[i]
 		}
 		update[i] = p
@@ -113,7 +80,7 @@ func (s *Skiplist[K, V]) Add(key K, value V) *skiplistNode[K, V] {
 
 	s.findClosestNode(key, value, update)
 
-	lv := s.randomLevel()
+	lv := randomLevel()
 	if lv > s.level {
 		s.level = lv
 	}

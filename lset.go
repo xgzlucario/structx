@@ -10,14 +10,14 @@ import (
 
 /*
 LSet (ListSet): map + list structure
-ListSet has a significant performance improvement over MapSet
-in the Range Union Intersect function
+LSet has richer api and faster Intersect, Union, Range operations than mapset
 */
 type LSet[T comparable] struct {
 	m  Map[T, struct{}]
 	ls *List[T]
 }
 
+// NewLSet: Create a new LSet from list
 func NewLSet[T comparable](values ...T) *LSet[T] {
 	ls := &LSet[T]{
 		m:  NewMap[T, struct{}](),
@@ -39,7 +39,6 @@ func (s *LSet[T]) Add(key T) bool {
 	return true
 }
 
-// make sure that key is not exist!
 func (s *LSet[T]) add(key T) {
 	s.ls.RPush(key)
 	s.m[key] = struct{}{}
@@ -55,7 +54,6 @@ func (s *LSet[T]) Remove(key T) bool {
 	return false
 }
 
-// make sure that key is exist!
 func (s *LSet[T]) remove(key T) {
 	delete(s.m, key)
 	s.ls.RemoveElem(key)
@@ -89,7 +87,7 @@ func (s *LSet[T]) Copy() *LSet[T] {
 	return newLSet
 }
 
-// Union
+// Union: Return the union of two sets
 func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy max lset
@@ -101,7 +99,6 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	return max
 }
 
-// Intersect
 func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy min lset
@@ -115,7 +112,6 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	return min
 }
 
-// Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	newSet := NewLSet[T]()
 	this.Range(func(k T) bool {
@@ -133,7 +129,7 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	return newSet
 }
 
-// LPop
+// LPop: Pop a elem from left
 func (this *LSet[T]) LPop() (v T, ok bool) {
 	if this.Len() > 0 {
 		v = this.ls.LPop()
@@ -143,7 +139,7 @@ func (this *LSet[T]) LPop() (v T, ok bool) {
 	return
 }
 
-// RPop
+// RPop: Pop a elem from right
 func (this *LSet[T]) RPop() (v T, ok bool) {
 	if this.Len() > 0 {
 		v = this.ls.RPop()
@@ -153,7 +149,7 @@ func (this *LSet[T]) RPop() (v T, ok bool) {
 	return
 }
 
-// RandomPop
+// RandomPop: Pop a random elem
 func (this *LSet[T]) RandomPop() (v T, ok bool) {
 	if this.Len() > 0 {
 		rand.Seed(time.Now().UnixNano())
@@ -170,17 +166,37 @@ func (s *LSet[T]) Len() int {
 	return s.ls.Len()
 }
 
-// Members
+// Top: Move a elem to the top
+func (s *LSet[T]) Top(elem T) bool {
+	index := s.ls.Find(elem)
+	if index < 0 {
+		return false
+	}
+	s.ls.Top(index)
+	return true
+}
+
+// Bottom: Move a elem to the bottom
+func (s *LSet[T]) Bottom(elem T) bool {
+	index := s.ls.Find(elem)
+	if index < 0 {
+		return false
+	}
+	s.ls.Bottom(index)
+	return true
+}
+
+// Members: Get all members
 func (s *LSet[T]) Members() Array[T] {
 	return s.ls.Array
 }
 
-// Marshal to bytes
+// Marshal: Marshal to bytes
 func (s *LSet[T]) Marshal() ([]byte, error) {
 	return sonic.Marshal(s.Members())
 }
 
-// Scan from bytes
+// Scan: Scan from bytes
 func (s *LSet[T]) Scan(src []byte) error {
 	var ls []T
 	err := sonic.Unmarshal(src, &ls)
@@ -191,7 +207,7 @@ func (s *LSet[T]) Scan(src []byte) error {
 	return err
 }
 
-// Print
+// Print: Used in Debug
 func (s *LSet[T]) Print() {
 	fmt.Printf("lset[%d]: %v\n", s.Len(), s.Members())
 }
