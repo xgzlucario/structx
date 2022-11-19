@@ -6,34 +6,32 @@ type zslNode[K, V Value] struct {
 }
 
 type ZSet[K, V Value] struct {
-	zsl *Skiplist[K, V]
-	m   Map[K, *zslNode[K, V]]
+	zsl   *Skiplist[K, V]
+	m     Map[K, *zslNode[K, V]]
 }
 
 // NewZSet
 func NewZSet[K, V Value]() *ZSet[K, V] {
 	return &ZSet[K, V]{
-		zsl: NewSkipList[K, V](),
-		m:   Map[K, *zslNode[K, V]]{},
+		zsl:   NewSkipList[K, V](),
+		m:     Map[K, *zslNode[K, V]]{},
 	}
 }
 
 // Set: set key and value
-func (z *ZSet[K, V]) Set(key K, value V) bool {
+func (z *ZSet[K, V]) Set(key K, value V) {
 	n, ok := z.m[key]
 	if ok {
 		// value not change
 		if value == n.value {
-			return false
+			return
 		}
 		n.value = value
 		z.zsl.Delete(key, n.value)
 		z.zsl.Add(key, n.value)
-
 	} else {
-		z.insertNode(key, value)
+		z.insert(key, value)
 	}
-	return true
 }
 
 // Incr: Increment value by key
@@ -41,7 +39,7 @@ func (z *ZSet[K, V]) Incr(key K, value V) V {
 	n, ok := z.m[key]
 	// not exist
 	if !ok {
-		z.insertNode(key, value)
+		z.insert(key, value)
 		return value
 	}
 	// exist
@@ -59,7 +57,7 @@ func (z *ZSet[K, V]) Delete(keys ...K) error {
 		if !ok {
 			return errKeyNotFound(key)
 		}
-		z.deleteNode(n.key, n.value)
+		z.delete(n.key, n.value)
 	}
 	return nil
 }
@@ -85,7 +83,8 @@ func (z *ZSet[K, V]) GetScore(key K) (v V, err error) {
 func (z *ZSet[K, V]) Copy() *ZSet[K, V] {
 	newZSet := NewZSet[K, V]()
 	z.Range(0, -1, func(key K, value V) bool {
-		return newZSet.Set(key, value)
+		newZSet.Set(key, value)
+		return false
 	})
 	return z
 }
@@ -113,7 +112,7 @@ func (z *ZSet[K, V]) Len() int {
 }
 
 // make sure that key is not exist!
-func (z *ZSet[K, V]) insertNode(key K, value V) *skiplistNode[K, V] {
+func (z *ZSet[K, V]) insert(key K, value V) *skiplistNode[K, V] {
 	z.m[key] = &zslNode[K, V]{
 		key:   key,
 		value: value,
@@ -122,7 +121,7 @@ func (z *ZSet[K, V]) insertNode(key K, value V) *skiplistNode[K, V] {
 }
 
 // make sure that key exist!
-func (z *ZSet[K, V]) deleteNode(key K, value V) {
+func (z *ZSet[K, V]) delete(key K, value V) {
 	delete(z.m, key)
 	z.zsl.Delete(key, value)
 }

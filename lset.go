@@ -204,10 +204,10 @@ func (s *LSet[T]) Scan(src []byte) error {
 		return err
 	}
 	*s = *NewLSet(ls...)
-	return err
+	return nil
 }
 
-// Print: Used in Debug
+// DEBUG
 func (s *LSet[T]) Print() {
 	fmt.Printf("lset[%d]: %v\n", s.Len(), s.Members())
 }

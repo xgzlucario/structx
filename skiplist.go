@@ -15,9 +15,9 @@ type skiplistNode[K, V Value] struct {
 }
 
 type Skiplist[K, V Value] struct {
-	head  *skiplistNode[K, V]
 	level int
 	len   int
+	head  *skiplistNode[K, V]
 }
 
 // NewSkipList

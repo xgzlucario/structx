@@ -9,10 +9,10 @@ import (
 
 const NUM = 1000
 
-func getZSet1() *structx.Skiplist[int64, float64] {
-	s := structx.NewSkipList[int64, float64]()
+func getZSet1() *structx.ZSet[int64, float64] {
+	s := structx.NewZSet[int64, float64]()
 	for i := 0; i < NUM; i++ {
-		s.Add(0, float64(i))
+		s.Incr(0, float64(i))
 	}
 	return s
 }
@@ -38,6 +38,21 @@ func Benchmark_ZSetAdd2(b *testing.B) {
 	}
 }
 
+// ========= Delete =========
+func Benchmark_ZSetDelete1(b *testing.B) {
+	s := getZSet1()
+	for i := 0; i < b.N; i++ {
+		s.Delete(int64(i))
+	}
+}
+
+func Benchmark_ZSetDelete2(b *testing.B) {
+	s := getZSet2()
+	for i := 0; i < b.N; i++ {
+		s.Delete(int64(i))
+	}
+}
+
 // ========= Range =========
 func Benchmark_ZSetRange1(b *testing.B) {
 	s := getZSet1()
@@ -59,13 +74,13 @@ func Benchmark_ZSetRange2(b *testing.B) {
 func Benchmark_ZSetRank1(b *testing.B) {
 	s := getZSet1()
 	for i := 0; i < b.N; i++ {
-		s.GetByRank(76)
+		s.GetByRank(3899)
 	}
 }
 
 func Benchmark_ZSetRank2(b *testing.B) {
 	s := getZSet2()
 	for i := 0; i < b.N; i++ {
-		s.GetDataByRank(76, true)
+		s.GetDataByRank(3899, true)
 	}
 }
