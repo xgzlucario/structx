@@ -22,7 +22,7 @@ type LSet[T comparable] struct {
 	flag bool
 }
 
-// NewLSet: Create a new LSet from list
+// NewLSet: Create a new LSet
 func NewLSet[T comparable](values ...T) *LSet[T] {
 	ls := &LSet[T]{
 		m:  NewMap[T, struct{}](),
@@ -109,15 +109,17 @@ func (s *LSet[T]) Range(f func(k T) bool) {
 
 // Copy
 func (s *LSet[T]) Copy() *LSet[T] {
-	newLSet := &LSet[T]{
+	lset := &LSet[T]{
 		m:  make(Map[T, struct{}], s.Len()),
 		ls: NewList(s.Members()...),
 	}
 	// copy map
-	for _, v := range s.Members() {
-		s.m[v] = struct{}{}
+	if lset.enable() {
+		for _, v := range s.Members() {
+			s.m[v] = struct{}{}
+		}
 	}
-	return newLSet
+	return lset
 }
 
 // Union: Return the union of two sets

@@ -15,37 +15,35 @@ Currently, structx provides the following types of data structures to support ge
 
 ### LSet
 
-`LSet` is a collection of map + list, has a faster `Range`, `Interset`, `Union` function performance than mapset.
+`LSet` uses `map + list` as the storage structure, where the elements are `sequential` and have `good iterative performance`, as well as `richer api`. When the data volume is small only `list` is used.
 
 #### **usage**
 
 ```go
-s := structx.NewLSet[int]()
-for i := 0;i < 4;i++ {
-    s.Add(i)
-}
-// (0,1,2,3)
+s := structx.NewLSet(1,2,3,4,1) // [1,2,3,4]
 
-s.Remove(3) // (0,1,2)
-s.Add(1) // (0,1,2)
-s.Max() // 2
+s.Remove(3) // [1,2,4]
+s.Add(1) // [1,2,4]
+s.Add(5) // [1,2,4,5]
 
-s.Reverse() // (2,1,0)
-s.Sort() // (0,1,2)
+s.Reverse() // [5,4,2,1]
+s.Top(2) // [2,5,4,1]
+s.Bottom(2) // [5,4,1,2]
+s.Rpop() // [5,4,1]
 
-s.Range(func(k int) {
+s.Range(func(k int) bool {
     // do something...
 })
-newS := structx.NewLSet(1,2,3) // (1,2,3)
+newS := structx.NewLSet(1,2,3) // [1,2,3]
 
-union := s.Union(newS) // (0,1,2,3)
-intersect := s.Intersect(newS) // (1,2)
-diff := s.Difference(newS) // (0,3)
+union := s.Union(newS) // [0,1,2,3)
+intersect := s.Intersect(newS) // [1,2]
+diff := s.Difference(newS) // [0,3]
 ```
 
 #### **Benchmark**
 
-Compare with mapset [deckarep/golang-set](https://github.com/deckarep/golang-set), **mapsize is 1000**.
+Compare with mapset [deckarep/golang-set](https://github.com/deckarep/golang-set).
 
 ```
 goos: linux
