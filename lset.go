@@ -11,7 +11,7 @@ import (
 /*
 When the LSet length is less than LSET_MAX_SIZE, only use slice, otherwise use Map + List
 */
-const LSET_MAX_SIZE = 128
+const LSET_MAX_SIZE = 32
 
 /*
 LSet (ListSet): map + list structure
@@ -20,7 +20,7 @@ LSet has richer api and faster Intersect, Union, Range operations than mapset
 type LSet[T comparable] struct {
 	m    Map[T, struct{}]
 	ls   *List[T]
-	init bool
+	flag bool
 }
 
 // NewLSet: Create a new LSet from list
@@ -44,19 +44,25 @@ func (s *LSet[T]) Add(key T) bool {
 	return false
 }
 
+// is enable to use map
+func (s *LSet[T]) enable() bool {
+	return s.Len() > LSET_MAX_SIZE || s.flag
+}
+
 func (s *LSet[T]) add(key T) {
 	s.ls.RPush(key)
-	// greater than SLICE_MAX_SIZE
-	if s.Len() > LSET_MAX_SIZE {
-		// init
-		if !s.init {
-			for _, v := range s.Members() {
-				s.m[v] = struct{}{}
-			}
-			s.init = true
-		} else {
-			s.m[key] = struct{}{}
+	// not use map
+	if !s.enable() {
+		return
+	}
+
+	if s.flag {
+		s.m[key] = struct{}{}
+	} else {
+		for _, v := range s.Members() {
+			s.m[v] = struct{}{}
 		}
+		s.flag = true
 	}
 }
 
@@ -70,7 +76,7 @@ func (s *LSet[T]) Remove(key T) bool {
 }
 
 func (s *LSet[T]) remove(key T) {
-	if s.Len() > LSET_MAX_SIZE {
+	if s.enable() {
 		delete(s.m, key)
 	}
 	s.ls.Remove(key)
@@ -161,7 +167,7 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 func (this *LSet[T]) LPop() (v T, ok bool) {
 	if this.Len() > 0 {
 		v, ok = this.ls.LPop(), true
-		if this.Len() > LSET_MAX_SIZE {
+		if this.enable() {
 			delete(this.m, v)
 		}
 	}
@@ -172,7 +178,7 @@ func (this *LSet[T]) LPop() (v T, ok bool) {
 func (this *LSet[T]) RPop() (v T, ok bool) {
 	if this.Len() > 0 {
 		v, ok = this.ls.RPop(), true
-		if this.Len() > LSET_MAX_SIZE {
+		if this.enable() {
 			delete(this.m, v)
 		}
 	}
@@ -240,6 +246,7 @@ func (s *LSet[T]) Scan(src []byte) error {
 // DEBUG
 func (s *LSet[T]) Print() {
 	fmt.Printf("lset[%d]: %v\n", s.Len(), s.Members())
+	s.m.Print()
 }
 
 // Compare two lset length and return (*min, *max)

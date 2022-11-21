@@ -7,7 +7,7 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-const SUM = 100
+const SUM = 28
 
 func getMapSet() mapset.Set[int] {
 	s := mapset.NewThreadUnsafeSet[int]()

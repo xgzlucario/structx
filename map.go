@@ -92,11 +92,20 @@ func (m *SyncMap[K, V]) Len() int {
 }
 
 // DEBUG
+func (m Map[K, V]) Print() {
+	fmt.Println("====== map start ======")
+	for k, v := range m {
+		fmt.Printf("%v -> %v\n", k, v)
+	}
+	fmt.Println("======= map end =======")
+}
+
+// DEBUG
 func (m *SyncMap[K, V]) Print() {
-	fmt.Println("====== start ======")
+	fmt.Println("====== map start ======")
 	m.Range(func(key K, value V) bool {
 		fmt.Printf("%v -> %v\n", key, value)
 		return false
 	})
-	fmt.Println("======= end =======")
+	fmt.Println("======= map end =======")
 }
