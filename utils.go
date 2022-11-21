@@ -41,8 +41,8 @@ func Sum[T Value](values ...T) T {
 	return sum
 }
 
-// InSlice
-func InSlice[T Value](mem T, arr []T) bool {
+// In
+func In[T Value](mem T, arr []T) bool {
 	for _, v := range arr {
 		if mem == v {
 			return true

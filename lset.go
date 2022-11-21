@@ -1,7 +1,6 @@
 package structx
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -35,6 +34,11 @@ func NewLSet[T comparable](values ...T) *LSet[T] {
 	return ls
 }
 
+// is enable to use map
+func (s *LSet[T]) enable() bool {
+	return s.Len() > LSET_MAX_SIZE || s.flag
+}
+
 // Add
 func (s *LSet[T]) Add(key T) bool {
 	if !s.Exist(key) {
@@ -42,11 +46,6 @@ func (s *LSet[T]) Add(key T) bool {
 		return true
 	}
 	return false
-}
-
-// is enable to use map
-func (s *LSet[T]) enable() bool {
-	return s.Len() > LSET_MAX_SIZE || s.flag
 }
 
 func (s *LSet[T]) add(key T) {
@@ -241,12 +240,6 @@ func (s *LSet[T]) Scan(src []byte) error {
 	}
 	*s = *NewLSet(ls...)
 	return nil
-}
-
-// DEBUG
-func (s *LSet[T]) Print() {
-	fmt.Printf("lset[%d]: %v\n", s.Len(), s.Members())
-	s.m.Print()
 }
 
 // Compare two lset length and return (*min, *max)

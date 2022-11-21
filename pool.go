@@ -19,7 +19,7 @@ type poolTask[T any] struct {
 // NewPool: Return new pool
 func NewPool[T any](size ...int) *Pool[T] {
 	// default
-	num := runtime.NumCPU() / 2
+	num := runtime.NumCPU()
 	if len(size) > 0 {
 		num = size[0]
 	}
