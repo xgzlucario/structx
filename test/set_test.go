@@ -7,7 +7,7 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-const SUM = 1000
+const SUM = 100
 
 func getMapSet() mapset.Set[int] {
 	s := mapset.NewThreadUnsafeSet[int]()
@@ -44,7 +44,7 @@ func Benchmark_LSetRange(b *testing.B) {
 	}
 }
 
-// ============ Rop ============
+// ============ Pop ============
 func Benchmark_MapSetPop(b *testing.B) {
 	s := getMapSet()
 	for i := 0; i < b.N; i++ {
@@ -122,3 +122,14 @@ func Benchmark_LSetDiff(b *testing.B) {
 		s1.Difference(s2)
 	}
 }
+
+// func BenchmarkTest(b *testing.B) {
+// 	s := structx.NewLSet[int]()
+// 	s.Add(2)
+// 	s.Add(5)
+// 	s.Add(9)
+// 	s.Add(1)
+// 	s.Remove(3)
+// 	s.Remove(2)
+// 	s.Print()
+// }

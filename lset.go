@@ -9,12 +9,18 @@ import (
 )
 
 /*
+When the LSet length is less than LSET_MAX_SIZE, only use slice, otherwise use Map + List
+*/
+const LSET_MAX_SIZE = 128
+
+/*
 LSet (ListSet): map + list structure
 LSet has richer api and faster Intersect, Union, Range operations than mapset
 */
 type LSet[T comparable] struct {
-	m  Map[T, struct{}]
-	ls *List[T]
+	m    Map[T, struct{}]
+	ls   *List[T]
+	init bool
 }
 
 // NewLSet: Create a new LSet from list
@@ -31,23 +37,32 @@ func NewLSet[T comparable](values ...T) *LSet[T] {
 
 // Add
 func (s *LSet[T]) Add(key T) bool {
-	_, ok := s.m[key]
-	if ok {
-		return false
+	if !s.Exist(key) {
+		s.add(key)
+		return true
 	}
-	s.add(key)
-	return true
+	return false
 }
 
 func (s *LSet[T]) add(key T) {
 	s.ls.RPush(key)
-	s.m[key] = struct{}{}
+	// greater than SLICE_MAX_SIZE
+	if s.Len() > LSET_MAX_SIZE {
+		// init
+		if !s.init {
+			for _, v := range s.Members() {
+				s.m[v] = struct{}{}
+			}
+			s.init = true
+		} else {
+			s.m[key] = struct{}{}
+		}
+	}
 }
 
 // Remove
 func (s *LSet[T]) Remove(key T) bool {
-	_, ok := s.m[key]
-	if ok {
+	if s.Exist(key) {
 		s.remove(key)
 		return true
 	}
@@ -55,19 +70,32 @@ func (s *LSet[T]) Remove(key T) bool {
 }
 
 func (s *LSet[T]) remove(key T) {
-	delete(s.m, key)
-	s.ls.RemoveElem(key)
+	if s.Len() > LSET_MAX_SIZE {
+		delete(s.m, key)
+	}
+	s.ls.Remove(key)
 }
 
 // Exist
 func (s *LSet[T]) Exist(key T) bool {
-	_, ok := s.m[key]
-	return ok
+	if s.Len() < LSET_MAX_SIZE {
+		// slice
+		for _, v := range s.Members() {
+			if key == v {
+				return true
+			}
+		}
+	} else {
+		// map
+		_, ok := s.m[key]
+		return ok
+	}
+	return false
 }
 
 // Range
 func (s *LSet[T]) Range(f func(k T) bool) {
-	for _, v := range s.ls.Array {
+	for _, v := range s.Members() {
 		if f(v) {
 			return
 		}
@@ -132,9 +160,10 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 // LPop: Pop a elem from left
 func (this *LSet[T]) LPop() (v T, ok bool) {
 	if this.Len() > 0 {
-		v = this.ls.LPop()
-		delete(this.m, v)
-		ok = true
+		v, ok = this.ls.LPop(), true
+		if this.Len() > LSET_MAX_SIZE {
+			delete(this.m, v)
+		}
 	}
 	return
 }
@@ -142,9 +171,10 @@ func (this *LSet[T]) LPop() (v T, ok bool) {
 // RPop: Pop a elem from right
 func (this *LSet[T]) RPop() (v T, ok bool) {
 	if this.Len() > 0 {
-		v = this.ls.RPop()
-		delete(this.m, v)
-		ok = true
+		v, ok = this.ls.RPop(), true
+		if this.Len() > LSET_MAX_SIZE {
+			delete(this.m, v)
+		}
 	}
 	return
 }

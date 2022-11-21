@@ -46,8 +46,8 @@ func (ls *List[T]) RPop() T {
 	return val
 }
 
-// RemoveElem
-func (ls *List[T]) RemoveElem(elem T) bool {
+// Remove
+func (ls *List[T]) Remove(elem T) bool {
 	for i, v := range ls.Array {
 		if v == elem {
 			ls.Array = append(ls.Array[:i], ls.Array[i+1:]...)
