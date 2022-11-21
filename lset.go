@@ -78,7 +78,7 @@ func (s *LSet[T]) Range(f func(k T) bool) {
 func (s *LSet[T]) Copy() *LSet[T] {
 	newLSet := &LSet[T]{
 		m:  make(Map[T, struct{}], s.Len()),
-		ls: NewList(s.ls.Array...),
+		ls: NewList(s.Members()...),
 	}
 	// copy map
 	for _, v := range s.Members() {

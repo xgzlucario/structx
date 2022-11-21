@@ -54,8 +54,19 @@ func (s *Skiplist[K, V]) GetByRank(rank int) (k K, v V, err error) {
 		}
 		p = p.forward[0]
 	}
-
 	return k, v, errOutOfBounds(rank)
+}
+
+// GetScoreWithRank: Get the score and rank by key
+func (s *Skiplist[K, V]) GetScoreWithRank(key K) (v V, rank int, err error) {
+	p := s.head
+	for i := 0; p != nil; i++ {
+		if p.key == key {
+			return p.value, i, nil
+		}
+		p = p.forward[0]
+	}
+	return v, -1, errOutOfBounds(rank)
 }
 
 func (s *Skiplist[K, V]) findClosestNode(k K, v V, update []*skiplistNode[K, V]) *skiplistNode[K, V] {
