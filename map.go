@@ -61,10 +61,15 @@ func (m *SyncMap[K, V]) LoadOrStore(key K, value V) (V, bool) {
 }
 
 // Delete
-func (m *SyncMap[K, V]) Delete(key K) {
+func (m *SyncMap[K, V]) Delete(key K) bool {
 	m.Lock()
 	defer m.Unlock()
-	delete(m.m, key)
+	_, ok := m.m[key]
+	if ok {
+		delete(m.m, key)
+		return true
+	}
+	return false
 }
 
 // Range

@@ -11,6 +11,7 @@ require (
 require (
 	github.com/chenzhuoyu/base64x v0.0.0-20220526154910-8bf9453eb81a // indirect
 	github.com/klauspost/cpuid/v2 v2.2.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.1.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
