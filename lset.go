@@ -224,8 +224,8 @@ func (s *LSet[T]) Bottom(elem T) bool {
 }
 
 // Members: Get all members
-func (s *LSet[T]) Members() Array[T] {
-	return s.ls.Array
+func (s *LSet[T]) Members() array[T] {
+	return s.ls.array
 }
 
 // Marshal: Marshal to bytes
