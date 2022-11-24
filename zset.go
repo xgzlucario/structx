@@ -103,12 +103,12 @@ func (z *ZSet[K, V]) Union(target *ZSet[K, V]) {
 }
 
 // Range
-func (z *ZSet[K, V]) Range(start, end int, f func(key K, value V) bool) {
+func (z *ZSet[K, V]) Range(start, end int, f func(K, V) bool) {
 	z.zsl.Range(start, end, f)
 }
 
 // RangeByScores
-func (z *ZSet[K, V]) RangeByScores(min, max V, f func(key K, value V) bool) {
+func (z *ZSet[K, V]) RangeByScores(min, max V, f func(K, V) bool) {
 	z.zsl.RangeByScores(min, max, f)
 }
 

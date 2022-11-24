@@ -11,7 +11,7 @@ import (
 func getCache1() *structx.Cache[string, float64] {
 	s := structx.NewCache[string, float64]()
 	for i := 0; i < NUM; i++ {
-		s.Store(strconv.Itoa(i), float64(i))
+		s.Set(strconv.Itoa(i), float64(i))
 	}
 	return s
 }

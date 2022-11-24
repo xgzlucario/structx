@@ -24,17 +24,29 @@ func NewSyncMap[K comparable, V any]() *SyncMap[K, V] {
 }
 
 // Store
-func (m *SyncMap[K, V]) Store(k K, v V) {
+func (m *SyncMap[K, V]) Store(key K, value V) {
 	m.Lock()
 	defer m.Unlock()
-	m.m[k] = v
+	m.m[key] = value
+}
+
+// StoreMany
+func (m *SyncMap[K, V]) StoreMany(keys []K, values []V) {
+	if len(keys) != len(values) {
+		panic("length is not equal between keys and values")
+	}
+	m.Lock()
+	defer m.Unlock()
+	for i := range keys {
+		m.m[keys[i]] = values[i]
+	}
 }
 
 // Load
-func (m *SyncMap[K, V]) Load(k K) (V, bool) {
+func (m *SyncMap[K, V]) Load(key K) (V, bool) {
 	m.RLock()
 	defer m.RUnlock()
-	v, ok := m.m[k]
+	v, ok := m.m[key]
 	return v, ok
 }
 
@@ -73,7 +85,7 @@ func (m *SyncMap[K, V]) Delete(key K) bool {
 }
 
 // Range
-func (m *SyncMap[K, V]) Range(f func(k K, v V) bool) {
+func (m *SyncMap[K, V]) Range(f func(K, V) bool) {
 	m.RLock()
 	defer m.RUnlock()
 	for k, v := range m.m {

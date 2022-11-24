@@ -5,7 +5,12 @@ import (
 	"time"
 )
 
-var GCDuration = time.Minute
+var (
+	GCDuration = time.Minute
+
+	DefaultTTL       = time.Minute * 10
+	NoTTL      int64 = math.MaxInt64
+)
 
 type cacheItem[V any] struct {
 	data V
@@ -28,17 +33,37 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 	return cache
 }
 
-// Store
-func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
+// Set
+func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
-		data: value,
-		ttl:  math.MaxInt64,
+		data: value, ttl: NoTTL,
 	}
 	// with ttl
 	if len(ttl) > 0 {
 		item.ttl = time.Now().Add(ttl[0]).UnixNano()
 	}
 	c.m.Store(key, item)
+}
+
+// Sets
+func (c *Cache[K, V]) Sets(keys []K, values []V) {
+	items := make([]*cacheItem[V], len(keys))
+	for i, v := range values {
+		items[i] = &cacheItem[V]{
+			data: v, ttl: NoTTL,
+		}
+	}
+	c.m.StoreMany(keys, items)
+}
+
+// SetTTL
+func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
+	item, ok := c.m.Load(key)
+	if ok {
+		item.ttl = int64(ttl)
+		return true
+	}
+	return false
 }
 
 // Load

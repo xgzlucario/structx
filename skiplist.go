@@ -147,7 +147,7 @@ func (s *Skiplist[K, V]) Delete(key K, value V) bool {
 }
 
 // Range
-func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V) bool) {
+func (s *Skiplist[K, V]) Range(start, end int, f func(K, V) bool) {
 	if end == -1 {
 		end = s.Len()
 	}
@@ -164,7 +164,7 @@ func (s *Skiplist[K, V]) Range(start, end int, f func(key K, value V) bool) {
 }
 
 // RangeByScores
-func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(key K, value V) bool) {
+func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(K, V) bool) {
 	p := s.head.next[0]
 	for p != nil {
 		if min <= p.value && p.value <= max {

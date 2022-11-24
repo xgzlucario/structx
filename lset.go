@@ -99,7 +99,7 @@ func (s *LSet[T]) Exist(key T) bool {
 }
 
 // Range
-func (s *LSet[T]) Range(f func(k T) bool) {
+func (s *LSet[T]) Range(f func(T) bool) {
 	for _, v := range s.Members() {
 		if f(v) {
 			return

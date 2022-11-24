@@ -64,7 +64,7 @@ func (s Array[T]) Reverse() {
 	}
 }
 
-func (this Array[T]) Range(f func(i int, v T) bool) {
+func (this Array[T]) Range(f func(int, T) bool) {
 	for i, v := range this {
 		if f(i, v) {
 			return
