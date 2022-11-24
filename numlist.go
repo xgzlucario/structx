@@ -4,14 +4,14 @@ import "sort"
 
 type NumList[T Number] struct {
 	*List[T]
-	ascend bool // sort
+	order bool // sort
 }
 
 // NewNumList
 func NewNumList[T Number](values ...T) *NumList[T] {
 	return &NumList[T]{
-		List:   NewList(values...),
-		ascend: true,
+		List:  NewList(values...),
+		order: true,
 	}
 }
 
@@ -66,7 +66,7 @@ func (ls *NumList[T]) Median() float64 {
 
 // Less
 func (ls *NumList[T]) Less(i, j int) bool {
-	if ls.ascend {
+	if ls.order {
 		return ls.array[i] < ls.array[j]
 	}
 	return ls.array[i] > ls.array[j]
@@ -77,9 +77,9 @@ func (ls *NumList[T]) Sort() {
 	sort.Sort(ls)
 }
 
-// SetAscend
-func (ls *NumList[T]) SetAscend(ascend bool) {
-	ls.ascend = ascend
+// SetOrder
+func (ls *NumList[T]) SetOrder(order bool) {
+	ls.order = order
 }
 
 // IsSorted
