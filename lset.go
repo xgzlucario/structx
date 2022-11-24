@@ -230,14 +230,13 @@ func (s *LSet[T]) Members() Array[T] {
 
 // Marshal: Marshal to bytes
 func (s *LSet[T]) Marshal() ([]byte, error) {
-	return sonic.Marshal(s.Members())
+	return s.ls.Marshal()
 }
 
 // Scan: Scan from bytes
 func (s *LSet[T]) Scan(src []byte) error {
 	var ls []T
-	err := sonic.Unmarshal(src, &ls)
-	if err != nil {
+	if err := sonic.Unmarshal(src, &s); err != nil {
 		return err
 	}
 	*s = *NewLSet(ls...)

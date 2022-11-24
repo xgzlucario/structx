@@ -1,5 +1,7 @@
 package structx
 
+import "github.com/bytedance/sonic"
+
 type List[T comparable] struct {
 	Array[T]
 }
@@ -55,4 +57,14 @@ func (ls *List[T]) Remove(elem T) bool {
 		}
 	}
 	return false
+}
+
+// Marshal: Marshal to bytes
+func (s *List[T]) Marshal() ([]byte, error) {
+	return sonic.Marshal(s.Array)
+}
+
+// Scan: Scan from bytes
+func (s *List[T]) Scan(src []byte) error {
+	return sonic.Unmarshal(src, &s)
 }

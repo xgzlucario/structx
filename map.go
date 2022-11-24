@@ -33,7 +33,7 @@ func (m *SyncMap[K, V]) Store(key K, value V) {
 // StoreMany
 func (m *SyncMap[K, V]) StoreMany(keys []K, values []V) {
 	if len(keys) != len(values) {
-		panic("length is not equal between keys and values")
+		panic(errLengthNotEqual(len(keys), len(values)))
 	}
 	m.Lock()
 	defer m.Unlock()
@@ -95,7 +95,7 @@ func (m *SyncMap[K, V]) Range(f func(K, V) bool) {
 	}
 }
 
-// Clear map
+// Clear
 func (m *SyncMap[K, V]) Clear() {
 	m.Lock()
 	defer m.Unlock()

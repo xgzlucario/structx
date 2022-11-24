@@ -1,9 +1,5 @@
 package structx
 
-import (
-	"fmt"
-)
-
 type Array[T comparable] []T
 
 func (s Array[T]) Swap(i, j int) {
@@ -70,9 +66,4 @@ func (this Array[T]) Range(f func(int, T) bool) {
 			return
 		}
 	}
-}
-
-// DEBUG
-func (this Array[T]) Print() {
-	fmt.Println("Array:", this)
 }
