@@ -25,13 +25,13 @@ func (s array[T]) Bottom(i int) {
 }
 
 // Index: return the element of index
-func (this array[T]) Index(index int) T {
-	return this[index]
+func (s array[T]) Index(index int) T {
+	return s[index]
 }
 
 // Find: return the index of element
-func (this array[T]) Find(elem T) int {
-	for i, v := range this {
+func (s array[T]) Find(elem T) int {
+	for i, v := range s {
 		if v == elem {
 			return i
 		}
@@ -51,6 +51,7 @@ func (s array[T]) RShift() {
 	s.Top(s.Len() - 1)
 }
 
+// Reverse
 func (s array[T]) Reverse() {
 	l, r := 0, s.Len()-1
 	for l < r {
@@ -60,8 +61,16 @@ func (s array[T]) Reverse() {
 	}
 }
 
-func (this array[T]) Range(f func(int, T) bool) {
-	for i, v := range this {
+// Copy
+func (s array[T]) Copy() array[T] {
+	newArr := make([]T, s.Len())
+	copy(newArr, s)
+	return newArr
+}
+
+// Range
+func (s array[T]) Range(f func(int, T) bool) {
+	for i, v := range s {
 		if f(i, v) {
 			return
 		}

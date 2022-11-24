@@ -73,13 +73,15 @@ func (ls *NumList[T]) Less(i, j int) bool {
 }
 
 // Sort
-func (ls *NumList[T]) Sort() {
+func (ls *NumList[T]) Sort() *NumList[T] {
 	sort.Sort(ls)
+	return ls
 }
 
 // SetOrder
-func (ls *NumList[T]) SetOrder(order bool) {
+func (ls *NumList[T]) SetOrder(order bool) *NumList[T] {
 	ls.order = order
+	return ls
 }
 
 // IsSorted

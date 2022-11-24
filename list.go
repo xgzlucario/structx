@@ -12,13 +12,15 @@ func NewList[T comparable](values ...T) *List[T] {
 }
 
 // LPush
-func (ls *List[T]) LPush(values ...T) {
+func (ls *List[T]) LPush(values ...T) *List[T] {
 	ls.array = append(values, ls.array...)
+	return ls
 }
 
 // RPush
-func (ls *List[T]) RPush(values ...T) {
+func (ls *List[T]) RPush(values ...T) *List[T] {
 	ls.array = append(ls.array, values...)
+	return ls
 }
 
 // LPop
@@ -29,7 +31,7 @@ func (ls *List[T]) LPop() T {
 }
 
 // Insert
-func (ls *List[T]) Insert(i int, value T) {
+func (ls *List[T]) Insert(i int, value T) *List[T] {
 	if i <= 0 {
 		ls.LPush(value)
 
@@ -39,6 +41,7 @@ func (ls *List[T]) Insert(i int, value T) {
 	} else {
 		ls.array = append(append(ls.array[0:i], value), ls.array[i:]...)
 	}
+	return ls
 }
 
 // RPop
