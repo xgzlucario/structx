@@ -61,17 +61,6 @@ func (s array[T]) Reverse() {
 	}
 }
 
-// Filter
-func (s array[T]) Filter(f func(T) bool) []T {
-	res := make([]T, 0)
-	for _, val := range s {
-		if f(val) {
-			res = append(res, val)
-		}
-	}
-	return res
-}
-
 // Copy
 func (s array[T]) Copy() array[T] {
 	newArr := make([]T, s.Len())

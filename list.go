@@ -8,12 +8,13 @@ import (
 
 type List[T comparable] struct {
 	array[T]
-	less func(int, int) bool
+	order bool
+	less  func(int, int) bool
 }
 
 // NewList: return new List
 func NewList[T comparable](values ...T) *List[T] {
-	return &List[T]{array: values}
+	return &List[T]{array: values, order: true}
 }
 
 // LPush
@@ -67,18 +68,26 @@ func (ls *List[T]) Remove(elem T) bool {
 	return false
 }
 
-// Set Less Function
-func (ls *List[T]) SetLess(f func(i, j int) bool) *List[T] {
+// SetOrder
+func (ls *List[T]) SetOrder(order bool) *List[T] {
+	ls.order = order
+	return ls
+}
+
+// SetLess
+func (ls *List[T]) SetLess(f func(int, int) bool) *List[T] {
 	ls.less = f
 	return ls
 }
 
-// Less: Should set less first!
 func (ls *List[T]) Less(i, j int) bool {
-	return ls.less(i, j)
+	if ls.order {
+		ls.less(i, j)
+	}
+	return !ls.less(i, j)
 }
 
-// Max: Should set less first!
+// Max: Should SetLess First
 func (ls *List[T]) Max() T {
 	max := 0
 	for i := range ls.array {
@@ -89,7 +98,7 @@ func (ls *List[T]) Max() T {
 	return ls.Index(max)
 }
 
-// Min: Should set less first!
+// Min: Should SetLess First
 func (ls *List[T]) Min() T {
 	min := 0
 	for i := range ls.array {
@@ -100,13 +109,13 @@ func (ls *List[T]) Min() T {
 	return ls.Index(min)
 }
 
-// Sort: Should set less first!
+// Sort: Should SetLess First
 func (ls *List[T]) Sort() *List[T] {
 	sort.Sort(ls)
 	return ls
 }
 
-// IsSorted: Should set less first!
+// IsSorted: Should SetLess First
 func (ls *List[T]) IsSorted() bool {
 	return sort.IsSorted(ls)
 }
