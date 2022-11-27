@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
@@ -10,8 +11,8 @@ import (
 func Benchmark_Test1(b *testing.B) {
 	l := structx.NewList(1)
 
-	for i := 0; i < 100; i++ {
-		l.RPush(i)
+	for i := 0; i < 10; i++ {
+		l.RPush(i % 6)
 	}
 
 	l.SetLess(func(i, j int) bool {
@@ -21,6 +22,7 @@ func Benchmark_Test1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		l.Sort()
 	}
+	fmt.Println(l)
 }
 
 func Benchmark_Test2(b *testing.B) {

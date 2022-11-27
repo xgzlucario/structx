@@ -82,7 +82,7 @@ func (ls *List[T]) SetLess(f func(int, int) bool) *List[T] {
 
 func (ls *List[T]) Less(i, j int) bool {
 	if ls.order {
-		ls.less(i, j)
+		return ls.less(i, j)
 	}
 	return !ls.less(i, j)
 }
