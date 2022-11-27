@@ -1,9 +1,14 @@
 package structx
 
-import "github.com/bytedance/sonic"
+import (
+	"sort"
+
+	"github.com/bytedance/sonic"
+)
 
 type List[T comparable] struct {
 	array[T]
+	less func(int, int) bool
 }
 
 // NewList: return new List
@@ -23,13 +28,6 @@ func (ls *List[T]) RPush(values ...T) *List[T] {
 	return ls
 }
 
-// LPop
-func (ls *List[T]) LPop() T {
-	val := ls.array[0]
-	ls.array = ls.array[1:]
-	return val
-}
-
 // Insert
 func (ls *List[T]) Insert(i int, value T) *List[T] {
 	if i <= 0 {
@@ -42,6 +40,13 @@ func (ls *List[T]) Insert(i int, value T) *List[T] {
 		ls.array = append(append(ls.array[0:i], value), ls.array[i:]...)
 	}
 	return ls
+}
+
+// LPop
+func (ls *List[T]) LPop() T {
+	val := ls.array[0]
+	ls.array = ls.array[1:]
+	return val
 }
 
 // RPop
@@ -60,6 +65,50 @@ func (ls *List[T]) Remove(elem T) bool {
 		}
 	}
 	return false
+}
+
+// Set Less Function
+func (ls *List[T]) SetLess(f func(i, j int) bool) *List[T] {
+	ls.less = f
+	return ls
+}
+
+// Less: Should set less first!
+func (ls *List[T]) Less(i, j int) bool {
+	return ls.less(i, j)
+}
+
+// Max: Should set less first!
+func (ls *List[T]) Max() T {
+	max := 0
+	for i := range ls.array {
+		if ls.less(max, i) {
+			max = i
+		}
+	}
+	return ls.Index(max)
+}
+
+// Min: Should set less first!
+func (ls *List[T]) Min() T {
+	min := 0
+	for i := range ls.array {
+		if ls.less(i, min) {
+			min = i
+		}
+	}
+	return ls.Index(min)
+}
+
+// Sort: Should set less first!
+func (ls *List[T]) Sort() *List[T] {
+	sort.Sort(ls)
+	return ls
+}
+
+// IsSorted: Should set less first!
+func (ls *List[T]) IsSorted() bool {
+	return sort.IsSorted(ls)
 }
 
 // Marshal: Marshal to bytes

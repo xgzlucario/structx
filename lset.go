@@ -100,11 +100,9 @@ func (s *LSet[T]) Exist(key T) bool {
 
 // Range
 func (s *LSet[T]) Range(f func(T) bool) {
-	for _, v := range s.Members() {
-		if f(v) {
-			return
-		}
-	}
+	s.ls.Range(func(i int, t T) bool {
+		return f(t)
+	})
 }
 
 // Copy
@@ -166,36 +164,29 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 
 // LPop: Pop a elem from left
 func (this *LSet[T]) LPop() (v T, ok bool) {
-	if this.Len() > 0 {
-		v, ok = this.ls.LPop(), true
-		if this.enable() {
-			delete(this.m, v)
-		}
+	v, ok = this.ls.LPop(), true
+	if this.enable() {
+		delete(this.m, v)
 	}
 	return
 }
 
 // RPop: Pop a elem from right
 func (this *LSet[T]) RPop() (v T, ok bool) {
-	if this.Len() > 0 {
-		v, ok = this.ls.RPop(), true
-		if this.enable() {
-			delete(this.m, v)
-		}
+	v, ok = this.ls.RPop(), true
+	if this.enable() {
+		delete(this.m, v)
 	}
 	return
 }
 
 // RandomPop: Pop a random elem
 func (this *LSet[T]) RandomPop() (v T, ok bool) {
-	if this.Len() > 0 {
-		rand.Seed(time.Now().UnixNano())
-		index := rand.Intn(this.Len())
+	rand.Seed(time.Now().UnixNano())
+	index := rand.Intn(this.Len())
 
-		this.ls.Bottom(index)
-		return this.RPop()
-	}
-	return
+	this.ls.Bottom(index)
+	return this.RPop()
 }
 
 // Len

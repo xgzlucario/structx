@@ -25,8 +25,8 @@ func (s array[T]) Bottom(i int) {
 }
 
 // Index: return the element of index
-func (s array[T]) Index(index int) T {
-	return s[index]
+func (s array[T]) Index(i int) T {
+	return s[i]
 }
 
 // Find: return the index of element
@@ -59,6 +59,17 @@ func (s array[T]) Reverse() {
 		l++
 		r--
 	}
+}
+
+// Filter
+func (s array[T]) Filter(f func(T) bool) []T {
+	res := make([]T, 0)
+	for _, val := range s {
+		if f(val) {
+			res = append(res, val)
+		}
+	}
+	return res
 }
 
 // Copy

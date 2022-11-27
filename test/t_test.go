@@ -1,24 +1,36 @@
 package test
 
 import (
-	"math"
+	"sort"
 	"testing"
+
+	"github.com/xgzlucario/structx"
 )
 
 func Benchmark_Test1(b *testing.B) {
-	var a int64
-	for i := 0; i < b.N; i++ {
-		a = -1
+	l := structx.NewList(1)
+
+	for i := 0; i < 100; i++ {
+		l.RPush(i)
 	}
-	if a > 0 {
+
+	l.SetLess(func(i, j int) bool {
+		return l.Index(i) < l.Index(j)
+	})
+
+	for i := 0; i < b.N; i++ {
+		l.Sort()
 	}
 }
 
 func Benchmark_Test2(b *testing.B) {
-	var a int64
-	for i := 0; i < b.N; i++ {
-		a = math.MaxInt64
+	l := sort.IntSlice{1}
+
+	for i := 0; i < 100; i++ {
+		l = append(l, i)
 	}
-	if a > 0 {
+
+	for i := 0; i < b.N; i++ {
+		l.Sort()
 	}
 }
