@@ -15,8 +15,8 @@ var (
 )
 
 type cacheItem[V any] struct {
-	data V
-	ttl  int64 // expiredTime
+	value V
+	ttl   int64 // expiredTime
 }
 
 type Cache[K Value, V any] struct {
@@ -41,7 +41,7 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 // Set
 func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
-		data: value, ttl: NoTTL,
+		value: value, ttl: NoTTL,
 	}
 	// with ttl
 	if len(ttl) > 0 {
@@ -55,7 +55,7 @@ func (c *Cache[K, V]) Sets(keys []K, values []V) {
 	items := make([]*cacheItem[V], len(keys))
 	for i, v := range values {
 		items[i] = &cacheItem[V]{
-			data: v, ttl: NoTTL,
+			value: v, ttl: NoTTL,
 		}
 	}
 	c.m.StoreMany(keys, items)
@@ -80,7 +80,7 @@ func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
 			c.m.Delete(key)
 			return
 		}
-		return item.data, true
+		return item.value, true
 	}
 	return
 }
@@ -107,7 +107,7 @@ func (c *Cache[K, V]) Len() int {
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
 		if v.ttl > c.now {
-			return f(k, v.data)
+			return f(k, v.value)
 		}
 		return false
 	})
@@ -116,7 +116,7 @@ func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
 		if v.ttl > c.now {
-			return f(k, v.data, v.ttl)
+			return f(k, v.value, v.ttl)
 		}
 		return false
 	})
@@ -147,7 +147,7 @@ func (c *Cache[K, V]) gabCollect() {
 func (c *Cache[K, V]) Print() {
 	fmt.Println("====== start ======")
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		fmt.Printf("%v -> %v expired(%v)\n", k, v.data, v.ttl < c.now)
+		fmt.Printf("%v -> %v expired(%v)\n", k, v.value, v.ttl < c.now)
 		return false
 	})
 	fmt.Println("======= end =======")
