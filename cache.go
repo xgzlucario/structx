@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	GCDuration = time.Second * 5
+	GCDuration = time.Minute
 
 	DefaultTTL       = time.Minute * 10
 	NoTTL      int64 = math.MaxInt64
