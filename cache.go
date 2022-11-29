@@ -1,12 +1,14 @@
 package structx
 
 import (
+	"fmt"
 	"math"
+	"sync/atomic"
 	"time"
 )
 
 var (
-	GCDuration = time.Minute
+	GCDuration = time.Second * 5
 
 	DefaultTTL       = time.Minute * 10
 	NoTTL      int64 = math.MaxInt64
@@ -18,18 +20,21 @@ type cacheItem[V any] struct {
 }
 
 type Cache[K Value, V any] struct {
-	m     *SyncMap[K, *cacheItem[V]]
-	alive bool
+	m   *SyncMap[K, *cacheItem[V]]
+	now int64
 }
 
 // NewCache
 func NewCache[K Value, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
-		m:     NewSyncMap[K, *cacheItem[V]](),
-		alive: true,
+		m:   NewSyncMap[K, *cacheItem[V]](),
+		now: time.Now().UnixNano(),
 	}
-	// start gc
-	go cache.startGC()
+
+	// start gc and ticter
+	go cache.gabCollect()
+	go cache.ticker()
+
 	return cache
 }
 
@@ -40,7 +45,7 @@ func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	}
 	// with ttl
 	if len(ttl) > 0 {
-		item.ttl = time.Now().Add(ttl[0]).UnixNano()
+		item.ttl = c.now + int64(ttl[0])
 	}
 	c.m.Store(key, item)
 }
@@ -60,7 +65,7 @@ func (c *Cache[K, V]) Sets(keys []K, values []V) {
 func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Load(key)
 	if ok {
-		item.ttl = int64(ttl)
+		item.ttl = c.now + int64(ttl)
 		return true
 	}
 	return false
@@ -71,7 +76,7 @@ func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
 	item, ok := c.m.Load(key)
 	if ok {
 		// expired
-		if item.ttl < time.Now().UnixNano() {
+		if item.ttl < c.now {
 			c.m.Delete(key)
 			return
 		}
@@ -85,14 +90,13 @@ func (c *Cache[K, V]) Delete(key K) bool {
 	return c.m.Delete(key)
 }
 
-// Clear
+// Clear: Clear data
 func (c *Cache[K, V]) Clear() {
 	c.m.Clear()
 }
 
-// Release
+// Release: release cache object, set as nil
 func (c *Cache[K, V]) Release() {
-	c.alive = false
 	c = nil
 }
 
@@ -101,9 +105,8 @@ func (c *Cache[K, V]) Len() int {
 }
 
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
-	now := time.Now().UnixNano()
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > now {
+		if v.ttl > c.now {
 			return f(k, v.data)
 		}
 		return false
@@ -111,27 +114,41 @@ func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 }
 
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
-	now := time.Now().UnixNano()
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > now {
+		if v.ttl > c.now {
 			return f(k, v.data, v.ttl)
 		}
 		return false
 	})
 }
 
-func (c *Cache[K, V]) startGC() {
-	for c != nil && c.alive {
+func (c *Cache[K, V]) ticker() {
+	for c != nil {
+		time.Sleep(time.Millisecond)
+		atomic.SwapInt64(&c.now, time.Now().UnixNano())
+	}
+}
+
+func (c *Cache[K, V]) gabCollect() {
+	for c != nil {
 		time.Sleep(GCDuration)
 
 		c.m.Lock()
-		now := time.Now().UnixNano()
 		// clear expired keys
 		for key, item := range c.m.m {
-			if item.ttl > now {
+			if item.ttl < c.now {
 				delete(c.m.m, key)
 			}
 		}
 		c.m.Unlock()
 	}
+}
+
+func (c *Cache[K, V]) Print() {
+	fmt.Println("====== start ======")
+	c.m.Range(func(k K, v *cacheItem[V]) bool {
+		fmt.Printf("%v -> %v expired(%v)\n", k, v.data, v.ttl < c.now)
+		return false
+	})
+	fmt.Println("======= end =======")
 }

@@ -84,7 +84,7 @@ func (ls *List[T]) Less(i, j int) bool {
 	if ls.order {
 		return ls.less(i, j)
 	}
-	return !ls.less(i, j)
+	return ls.less(j, i)
 }
 
 // Max: Should SetLess First
