@@ -1,5 +1,7 @@
 package structx
 
+import "fmt"
+
 type array[T comparable] []T
 
 func (s array[T]) Swap(i, j int) {
@@ -75,4 +77,9 @@ func (s array[T]) Range(f func(int, T) bool) {
 			return
 		}
 	}
+}
+
+// Print
+func (s array[T]) Print() {
+	fmt.Println(s)
 }

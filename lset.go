@@ -241,3 +241,8 @@ func compareTwoLSet[T comparable](s1 *LSet[T], s2 *LSet[T]) (*LSet[T], *LSet[T])
 	}
 	return s2, s1
 }
+
+// Print
+func (s *LSet[T]) Print() {
+	s.ls.Print()
+}

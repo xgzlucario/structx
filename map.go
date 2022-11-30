@@ -1,6 +1,7 @@
 package structx
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -52,6 +53,14 @@ func (m Map[K, V]) Range(f func(K, V) bool) {
 // Len
 func (m Map[K, V]) Len() int {
 	return len(m)
+}
+
+// Print
+func (m Map[K, V]) Print() {
+	m.Range(func(k K, v V) bool {
+		fmt.Printf("%+v -> %+v\n", k, v)
+		return false
+	})
 }
 
 // ======================= SyncMap =======================
@@ -116,4 +125,11 @@ func (m *SyncMap[K, V]) Len() int {
 	m.RLock()
 	defer m.RUnlock()
 	return m.m.Len()
+}
+
+// Print
+func (m *SyncMap[K, V]) Print() {
+	m.RLock()
+	defer m.RUnlock()
+	m.m.Print()
 }

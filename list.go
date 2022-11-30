@@ -129,3 +129,8 @@ func (s *List[T]) Marshal() ([]byte, error) {
 func (s *List[T]) Scan(src []byte) error {
 	return sonic.Unmarshal(src, &s)
 }
+
+// Print
+func (s *List[T]) Print() {
+	s.array.Print()
+}

@@ -176,12 +176,10 @@ func (s *Skiplist[K, V]) RangeByScores(min, max V, f func(K, V) bool) {
 	}
 }
 
-// DEBUG
+// Print
 func (s *Skiplist[K, V]) Print() {
-	fmt.Println("====== start ======")
 	s.Range(0, -1, func(key K, value V) bool {
-		fmt.Printf("%v -> %v\n", key, value)
+		fmt.Printf("%+v -> %+v\n", key, value)
 		return false
 	})
-	fmt.Println("======= end =======")
 }

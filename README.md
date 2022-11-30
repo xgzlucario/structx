@@ -5,17 +5,46 @@ Data structures and algorithms implemented using generics.
 Currently, structx provides the following types of data structures to support generic types:
 
 - `List`
-- `Map`
-- `SyncMap`
+- `Map`、`SyncMap`
 - `LSet (ListSet)`
 - `ZSet (SortedSet)`
 - `Pool`
 - `Skiplist`
 - `Cache`
 
+### List
+
+`List` is a data structure wrapping basic type `slice`.  Compare to basic slice type, List is `sequential`, `sortable`, and `nice wrappered`.
+
+#### usage
+
+```go
+ls := structx.NewList(1,2,3)
+ls.RPush(4) // [1,2,3,4]
+ls.LPop() // 1 [2,3,4]
+ls.Reverse() // [4,3,2]
+
+ls.Index(1) // 3
+ls.Find(4) // 0
+
+// shift
+ls.RShift() // [2,4,3]
+ls.Top(1) // [4,2,3]
+
+// Less
+ls.SetLess(func(i, j int) bool {
+	return l.Index(i) < l.Index(j)
+})
+// Ascending
+ls.SetOrder(true)
+
+ls.Sort() // [2,3,4]
+ls.Max() // 4
+```
+
 ### LSet
 
-`LSet` uses `map + list` as the storage structure, where the elements are `sequential` and have `good iterative performance`, as well as `richer api`. When the data volume is small only `list` is used.
+`LSet` uses `Map + List` as the storage structure. LSet is Inherited from `List`, where the elements are `sequential` and have `good iterative performance`, as well as `richer api`. When the data volume is small only `list` is used.
 
 #### **usage**
 
@@ -26,9 +55,9 @@ s.Remove(3) // [1,2,4]
 s.Add(1) // [1,2,4]
 s.Add(5) // [1,2,4,5]
 
+// shift
 s.Reverse() // [5,4,2,1]
 s.Top(2) // [2,5,4,1]
-s.Bottom(2) // [5,4,1,2]
 s.Rpop() // [5,4,1]
 
 s.Range(func(k int) bool {

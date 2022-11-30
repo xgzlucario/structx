@@ -8,7 +8,7 @@ import (
 )
 
 func Benchmark_Sort1(b *testing.B) {
-	l := structx.NewList(1)
+	l := structx.NewList(1, 2, 3)
 	for i := 0; i < NUM; i++ {
 		l.RPush(i % 32)
 	}

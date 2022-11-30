@@ -9,9 +9,11 @@ import (
 
 var (
 	GCDuration = time.Minute
+	DefaultTTL = time.Minute * 10
+)
 
-	DefaultTTL       = time.Minute * 10
-	NoTTL      int64 = math.MaxInt64
+const (
+	NoTTL = math.MaxInt64
 )
 
 type cacheItem[V any] struct {
@@ -135,10 +137,8 @@ func (c *Cache[K, V]) gabCollect() {
 }
 
 func (c *Cache[K, V]) Print() {
-	fmt.Println("====== start ======")
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		fmt.Printf("%v -> %v expired(%v)\n", k, v.value, v.ttl < c.now)
+		fmt.Printf("%+v -> %+v\n", k, v.value)
 		return false
 	})
-	fmt.Println("======= end =======")
 }

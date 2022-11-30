@@ -131,7 +131,7 @@ func (z *ZSet[K, V]) delete(key K, value V) {
 	z.zsl.Delete(key, value)
 }
 
-// DEBUG
+// Print
 func (z *ZSet[K, V]) Print() {
 	z.zsl.Print()
 }
