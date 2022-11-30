@@ -182,6 +182,9 @@ func (this *LSet[T]) RPop() (v T, ok bool) {
 
 // RandomPop: Pop a random elem
 func (this *LSet[T]) RandomPop() (v T, ok bool) {
+	if this.Len() == 0 {
+		return
+	}
 	rand.Seed(time.Now().UnixNano())
 	index := rand.Intn(this.Len())
 
