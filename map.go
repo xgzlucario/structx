@@ -4,11 +4,57 @@ import (
 	"sync"
 )
 
+// ======================= Map =======================
 type Map[K comparable, V any] map[K]V
 
+// NewMap
 func NewMap[K comparable, V any]() Map[K, V] {
 	return Map[K, V]{}
 }
+
+// Load
+func (m Map[K, V]) Load(key K) (V, bool) {
+	v, ok := m[key]
+	return v, ok
+}
+
+// Store
+func (m Map[K, V]) Store(key K, value V) {
+	m[key] = value
+}
+
+// StoreMany
+func (m Map[K, V]) StoreMany(keys []K, values []V) {
+	for i := range keys {
+		m[keys[i]] = values[i]
+	}
+}
+
+// Delete
+func (m Map[K, V]) Delete(key K) bool {
+	_, ok := m[key]
+	if ok {
+		delete(m, key)
+		return true
+	}
+	return false
+}
+
+// Range
+func (m Map[K, V]) Range(f func(K, V) bool) {
+	for k, v := range m {
+		if f(k, v) {
+			return
+		}
+	}
+}
+
+// Len
+func (m Map[K, V]) Len() int {
+	return len(m)
+}
+
+// ======================= SyncMap =======================
 
 // SynMap: generic version of sync.Map
 type SyncMap[K comparable, V any] struct {
@@ -27,72 +73,35 @@ func NewSyncMap[K comparable, V any]() *SyncMap[K, V] {
 func (m *SyncMap[K, V]) Store(key K, value V) {
 	m.Lock()
 	defer m.Unlock()
-	m.m[key] = value
+	m.m.Store(key, value)
 }
 
 // StoreMany
 func (m *SyncMap[K, V]) StoreMany(keys []K, values []V) {
-	if len(keys) != len(values) {
-		panic(errLengthNotEqual(len(keys), len(values)))
-	}
 	m.Lock()
 	defer m.Unlock()
-	for i := range keys {
-		m.m[keys[i]] = values[i]
-	}
+	m.m.StoreMany(keys, values)
 }
 
 // Load
 func (m *SyncMap[K, V]) Load(key K) (V, bool) {
 	m.RLock()
 	defer m.RUnlock()
-	v, ok := m.m[key]
-	return v, ok
-}
-
-// Load and delete
-func (m *SyncMap[K, V]) LoadAndDelete(key K) (V, bool) {
-	m.Lock()
-	defer m.Unlock()
-	v, ok := m.m[key]
-	if ok {
-		delete(m.m, key)
-	}
-	return v, ok
-}
-
-// Load or store
-func (m *SyncMap[K, V]) LoadOrStore(key K, value V) (V, bool) {
-	m.Lock()
-	defer m.Unlock()
-	v, ok := m.m[key]
-	if !ok {
-		m.m[key] = value
-	}
-	return v, ok
+	return m.m.Load(key)
 }
 
 // Delete
 func (m *SyncMap[K, V]) Delete(key K) bool {
 	m.Lock()
 	defer m.Unlock()
-	_, ok := m.m[key]
-	if ok {
-		delete(m.m, key)
-		return true
-	}
-	return false
+	return m.m.Delete(key)
 }
 
 // Range
 func (m *SyncMap[K, V]) Range(f func(K, V) bool) {
 	m.RLock()
 	defer m.RUnlock()
-	for k, v := range m.m {
-		if f(k, v) {
-			return
-		}
-	}
+	m.m.Range(f)
 }
 
 // Clear
@@ -106,5 +115,5 @@ func (m *SyncMap[K, V]) Clear() {
 func (m *SyncMap[K, V]) Len() int {
 	m.RLock()
 	defer m.RUnlock()
-	return len(m.m)
+	return m.m.Len()
 }

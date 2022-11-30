@@ -31,15 +31,15 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 		now: time.Now().UnixNano(),
 	}
 
-	// start gc and ticter
+	// start gc and ticker
 	go cache.gabCollect()
 	go cache.ticker()
 
 	return cache
 }
 
-// Set
-func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
+// Store
+func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
 		value: value, ttl: NoTTL,
 	}
@@ -50,8 +50,8 @@ func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	c.m.Store(key, item)
 }
 
-// Sets
-func (c *Cache[K, V]) Sets(keys []K, values []V) {
+// StoreMany
+func (c *Cache[K, V]) StoreMany(keys []K, values []V) {
 	items := make([]*cacheItem[V], len(keys))
 	for i, v := range values {
 		items[i] = &cacheItem[V]{
@@ -61,8 +61,8 @@ func (c *Cache[K, V]) Sets(keys []K, values []V) {
 	c.m.StoreMany(keys, items)
 }
 
-// SetTTL
-func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
+// StoreTTL
+func (c *Cache[K, V]) StoreTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Load(key)
 	if ok {
 		item.ttl = c.now + int64(ttl)
@@ -73,13 +73,8 @@ func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 
 // Load
 func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
-	item, ok := c.m.Load(key)
-	if ok {
-		// expired
-		if item.ttl < c.now {
-			c.m.Delete(key)
-			return
-		}
+	// check ttl
+	if item, ok := c.m.Load(key); ok && item.ttl > c.now {
 		return item.value, true
 	}
 	return
@@ -90,14 +85,9 @@ func (c *Cache[K, V]) Delete(key K) bool {
 	return c.m.Delete(key)
 }
 
-// Clear: Clear data
+// Clear
 func (c *Cache[K, V]) Clear() {
 	c.m.Clear()
-}
-
-// Release: release cache object, set as nil
-func (c *Cache[K, V]) Release() {
-	c = nil
 }
 
 func (c *Cache[K, V]) Len() int {
