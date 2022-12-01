@@ -124,7 +124,6 @@ func (c *Cache[K, V]) ticker() {
 func (c *Cache[K, V]) gabCollect() {
 	for c != nil {
 		time.Sleep(GCDuration)
-
 		c.m.Lock()
 		// clear expired keys
 		for key, item := range c.m.m {

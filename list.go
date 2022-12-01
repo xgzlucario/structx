@@ -9,7 +9,7 @@ import (
 type List[T comparable] struct {
 	array[T]
 	order bool
-	less  func(int, int) bool
+	less  func(T, T) bool // the input param is elem
 }
 
 // NewList: return new List
@@ -74,39 +74,41 @@ func (ls *List[T]) SetOrder(order bool) *List[T] {
 	return ls
 }
 
-// SetLess
-func (ls *List[T]) SetLess(f func(int, int) bool) *List[T] {
+// SetLess: the input param is elem
+func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
 	ls.less = f
 	return ls
 }
 
 func (ls *List[T]) Less(i, j int) bool {
 	if ls.order {
-		return ls.less(i, j)
+		// arr[i] < arr[j]
+		return ls.less(ls.array[i], ls.array[j])
 	}
-	return ls.less(j, i)
+	// arr[j] < arr[i]
+	return ls.less(ls.array[j], ls.array[i])
 }
 
 // Max: Should SetLess First
 func (ls *List[T]) Max() T {
-	max := 0
-	for i := range ls.array {
-		if ls.less(max, i) {
-			max = i
+	max := ls.array[0]
+	for _, v := range ls.array {
+		if ls.less(max, v) {
+			max = v
 		}
 	}
-	return ls.Index(max)
+	return max
 }
 
 // Min: Should SetLess First
 func (ls *List[T]) Min() T {
-	min := 0
-	for i := range ls.array {
-		if ls.less(i, min) {
-			min = i
+	min := ls.array[0]
+	for _, v := range ls.array {
+		if ls.less(v, min) {
+			min = v
 		}
 	}
-	return ls.Index(min)
+	return min
 }
 
 // Sort: Should SetLess First
