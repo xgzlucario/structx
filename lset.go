@@ -122,8 +122,12 @@ func (s *LSet[T]) Copy() *LSet[T] {
 
 // Equal: Compare members between two lsets is equal
 func (s *LSet[T]) Equal(target *LSet[T]) bool {
+	if s.Len() != target.Len() {
+		return false
+	}
+
 	for _, i := range s.Members() {
-		flag := false
+		var flag bool
 
 		for _, j := range target.Members() {
 			if i == j {
