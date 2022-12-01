@@ -9,7 +9,7 @@ import (
 type List[T comparable] struct {
 	array[T]
 	order bool
-	less  func(T, T) bool // the input param is elem
+	less  func(T, T) bool // the input params is elements
 }
 
 // NewList: return new List
@@ -74,7 +74,25 @@ func (ls *List[T]) SetOrder(order bool) *List[T] {
 	return ls
 }
 
-// SetLess: the input param is elem
+/*
+SetLess: Set Less to make list sortable. The input params is elements.
+
+exp:
+
+	ls.SetLess(func(i, j int) bool {
+		return i < j
+	})
+
+or:
+
+	type A struct {
+		Name string
+		Score int
+	}
+	ls.SetLess(func(i, j A) bool {
+		return i.Score < j.Score
+	})
+*/
 func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
 	ls.less = f
 	return ls

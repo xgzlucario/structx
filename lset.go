@@ -120,6 +120,24 @@ func (s *LSet[T]) Copy() *LSet[T] {
 	return lset
 }
 
+// Equal: Compare members between two lsets is equal
+func (s *LSet[T]) Equal(target *LSet[T]) bool {
+	for _, i := range s.Members() {
+		flag := false
+
+		for _, j := range target.Members() {
+			if i == j {
+				flag = true
+				break
+			}
+		}
+		if !flag {
+			return false
+		}
+	}
+	return true
+}
+
 // Union: Return the union of two sets
 func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
