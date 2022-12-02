@@ -1,20 +1,20 @@
 package structx
 
 import (
-	"sort"
+	"golang.org/x/exp/slices"
 
 	"github.com/bytedance/sonic"
 )
 
 type List[T comparable] struct {
 	array[T]
-	order bool
-	less  func(T, T) bool // the input params is elements
+	order func(T, T) bool // Sort, IsSorted Used
+	less  func(T, T) bool // Max, Min Used
 }
 
 // NewList: return new List
 func NewList[T comparable](values ...T) *List[T] {
-	return &List[T]{array: values, order: true}
+	return &List[T]{array: values}
 }
 
 // LPush
@@ -69,42 +69,15 @@ func (ls *List[T]) Remove(elem T) bool {
 }
 
 // SetOrder
-func (ls *List[T]) SetOrder(order bool) *List[T] {
-	ls.order = order
+func (ls *List[T]) SetOrder(f func(T, T) bool) *List[T] {
+	ls.order = f
 	return ls
 }
 
-/*
-SetLess: Set Less to make list sortable. The input params is elements.
-
-exp:
-
-	ls.SetLess(func(i, j int) bool {
-		return i < j
-	})
-
-or:
-
-	type A struct {
-		Name string
-		Score int
-	}
-	ls.SetLess(func(i, j A) bool {
-		return i.Score < j.Score
-	})
-*/
+// SetLess: Set Less to make list sortable. The input params is elements.
 func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
 	ls.less = f
 	return ls
-}
-
-func (ls *List[T]) Less(i, j int) bool {
-	if ls.order {
-		// arr[i] < arr[j]
-		return ls.less(ls.array[i], ls.array[j])
-	}
-	// arr[j] < arr[i]
-	return ls.less(ls.array[j], ls.array[i])
 }
 
 // Max: Should SetLess First
@@ -131,13 +104,26 @@ func (ls *List[T]) Min() T {
 
 // Sort: Should SetLess First
 func (ls *List[T]) Sort() *List[T] {
-	sort.Sort(ls)
+	ls.checkOrder()
+	slices.SortFunc(ls.array, ls.order)
 	return ls
 }
 
 // IsSorted: Should SetLess First
 func (ls *List[T]) IsSorted() bool {
-	return sort.IsSorted(ls)
+	ls.checkOrder()
+	return slices.IsSortedFunc(ls.array, ls.order)
+}
+
+// check if order is nil
+func (ls *List[T]) checkOrder() {
+	// default ascending, please set less first
+	if ls.order == nil {
+		if ls.less == nil {
+			panic("Please use SetLess() to init less first")
+		}
+		ls.order = ls.less
+	}
 }
 
 // Marshal: Marshal to bytes

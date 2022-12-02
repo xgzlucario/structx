@@ -7,6 +7,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.1.0
 	github.com/liyiheng/zset v0.0.0-20211012035528-6679b37ff27a
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
 )
 
 require (
