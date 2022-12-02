@@ -68,13 +68,13 @@ func (ls *List[T]) Remove(elem T) bool {
 	return false
 }
 
-// SetOrder
+// SetOrder: Make list sortable. The input params is elements.
 func (ls *List[T]) SetOrder(f func(T, T) bool) *List[T] {
 	ls.order = f
 	return ls
 }
 
-// SetLess: Set Less to make list sortable. The input params is elements.
+// SetLess: Make list sortable. The input params is elements.
 func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
 	ls.less = f
 	return ls

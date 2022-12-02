@@ -126,16 +126,8 @@ func (s *LSet[T]) Equal(target *LSet[T]) bool {
 		return false
 	}
 
-	for _, i := range s.Members() {
-		var flag bool
-
-		for _, j := range target.Members() {
-			if i == j {
-				flag = true
-				break
-			}
-		}
-		if !flag {
+	for _, val := range target.Members() {
+		if !s.Exist(val) {
 			return false
 		}
 	}
