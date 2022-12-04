@@ -17,16 +17,16 @@ LSet (ListSet): map + list structure
 LSet has richer api and faster Intersect, Union, Range operations than mapset
 */
 type LSet[T comparable] struct {
-	m    Map[T, struct{}]
-	ls   *List[T]
+	m Map[T, struct{}]
+	*List[T]
 	flag bool
 }
 
 // NewLSet: Create a new LSet
 func NewLSet[T comparable](values ...T) *LSet[T] {
 	ls := &LSet[T]{
-		m:  NewMap[T, struct{}](),
-		ls: NewList[T](),
+		m:    NewMap[T, struct{}](),
+		List: NewList[T](),
 	}
 	for _, v := range values {
 		ls.Add(v)
@@ -49,7 +49,7 @@ func (s *LSet[T]) Add(key T) bool {
 }
 
 func (s *LSet[T]) add(key T) {
-	s.ls.RPush(key)
+	s.RPush(key)
 	// not use map
 	if !s.enable() {
 		return
@@ -78,7 +78,7 @@ func (s *LSet[T]) remove(key T) {
 	if s.enable() {
 		delete(s.m, key)
 	}
-	s.ls.Remove(key)
+	s.Remove(key)
 }
 
 // Exist
@@ -98,18 +98,11 @@ func (s *LSet[T]) Exist(key T) bool {
 	return false
 }
 
-// Range
-func (s *LSet[T]) Range(f func(T) bool) {
-	s.ls.Range(func(i int, t T) bool {
-		return f(t)
-	})
-}
-
 // Copy
 func (s *LSet[T]) Copy() *LSet[T] {
 	lset := &LSet[T]{
-		m:  make(Map[T, struct{}], s.Len()),
-		ls: NewList(s.Members()...),
+		m:    make(Map[T, struct{}], s.Len()),
+		List: NewList(s.Members()...),
 	}
 	// copy map
 	if lset.enable() {
@@ -139,18 +132,19 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy max lset
 	max = max.Copy()
-	min.Range(func(k T) bool {
+	min.Range(func(_ int, k T) bool {
 		max.Add(k)
 		return false
 	})
 	return max
 }
 
+// Intersect
 func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy min lset
 	min = min.Copy()
-	min.Range(func(k T) bool {
+	min.Range(func(_ int, k T) bool {
 		if !max.Exist(k) {
 			min.remove(k)
 		}
@@ -159,15 +153,16 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	return min
 }
 
+// Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	newSet := NewLSet[T]()
-	this.Range(func(k T) bool {
+	this.Range(func(_ int, k T) bool {
 		if !t.Exist(k) {
 			newSet.add(k)
 		}
 		return false
 	})
-	t.Range(func(k T) bool {
+	t.Range(func(_ int, k T) bool {
 		if !this.Exist(k) {
 			newSet.add(k)
 		}
@@ -176,9 +171,26 @@ func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	return newSet
 }
 
+// IsSubSet
+func (this *LSet[T]) IsSubSet(t *LSet[T]) bool {
+	if t.Len() > this.Len() {
+		return false
+	}
+
+	ok := true
+	t.Range(func(_ int, t T) bool {
+		if !this.Exist(t) {
+			ok = false
+			return true
+		}
+		return false
+	})
+	return ok
+}
+
 // LPop: Pop a elem from left
 func (this *LSet[T]) LPop() (v T, ok bool) {
-	v, ok = this.ls.LPop(), true
+	v, ok = this.List.LPop()
 	if this.enable() {
 		delete(this.m, v)
 	}
@@ -187,7 +199,7 @@ func (this *LSet[T]) LPop() (v T, ok bool) {
 
 // RPop: Pop a elem from right
 func (this *LSet[T]) RPop() (v T, ok bool) {
-	v, ok = this.ls.RPop(), true
+	v, ok = this.List.RPop()
 	if this.enable() {
 		delete(this.m, v)
 	}
@@ -202,52 +214,21 @@ func (this *LSet[T]) RandomPop() (v T, ok bool) {
 	rand.Seed(time.Now().UnixNano())
 	index := rand.Intn(this.Len())
 
-	this.ls.Bottom(index)
+	this.Bottom(index)
 	return this.RPop()
-}
-
-// Len
-func (s *LSet[T]) Len() int {
-	return s.ls.Len()
-}
-
-// Top: Move a elem to the top
-func (s *LSet[T]) Top(elem T) bool {
-	index := s.ls.Find(elem)
-	if index < 0 {
-		return false
-	}
-	s.ls.Top(index)
-	return true
-}
-
-// Bottom: Move a elem to the bottom
-func (s *LSet[T]) Bottom(elem T) bool {
-	index := s.ls.Find(elem)
-	if index < 0 {
-		return false
-	}
-	s.ls.Bottom(index)
-	return true
 }
 
 // Members: Get all members
 func (s *LSet[T]) Members() array[T] {
-	return s.ls.array
-}
-
-// Marshal: Marshal to bytes
-func (s *LSet[T]) Marshal() ([]byte, error) {
-	return s.ls.Marshal()
+	return s.array
 }
 
 // Scan: Scan from bytes
-func (s *LSet[T]) Scan(src []byte) error {
-	var ls []T
-	if err := sonic.Unmarshal(src, &s); err != nil {
+func (s *LSet[T]) ScanJSON(src []byte) error {
+	if err := sonic.Unmarshal(src, &s.array); err != nil {
 		return err
 	}
-	*s = *NewLSet(ls...)
+	*s = *NewLSet(s.array...)
 	return nil
 }
 
@@ -257,9 +238,4 @@ func compareTwoLSet[T comparable](s1 *LSet[T], s2 *LSet[T]) (*LSet[T], *LSet[T])
 		return s1, s2
 	}
 	return s2, s1
-}
-
-// Print
-func (s *LSet[T]) Print() {
-	s.ls.Print()
 }

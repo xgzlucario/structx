@@ -38,7 +38,7 @@ func Benchmark_MapSetRange(b *testing.B) {
 func Benchmark_LSetRange(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
-		s.Range(func(k int) bool {
+		s.Range(func(_ int, v int) bool {
 			return false
 		})
 	}
@@ -120,5 +120,22 @@ func Benchmark_LSetDiff(b *testing.B) {
 	s2 := getListSet()
 	for i := 0; i < b.N; i++ {
 		s1.Difference(s2)
+	}
+}
+
+// ============ IsSubSet ============
+func Benchmark_SetIsSubSet(b *testing.B) {
+	s1 := getMapSet()
+	s2 := getMapSet()
+	for i := 0; i < b.N; i++ {
+		s1.IsSubset(s2)
+	}
+}
+
+func Benchmark_LSetIsSubSet(b *testing.B) {
+	s1 := getListSet()
+	s2 := getListSet()
+	for i := 0; i < b.N; i++ {
+		s1.IsSubSet(s2)
 	}
 }

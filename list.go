@@ -44,17 +44,23 @@ func (ls *List[T]) Insert(i int, value T) *List[T] {
 }
 
 // LPop
-func (ls *List[T]) LPop() T {
+func (ls *List[T]) LPop() (v T, ok bool) {
+	if ls.Len() == 0 {
+		return
+	}
 	val := ls.array[0]
 	ls.array = ls.array[1:]
-	return val
+	return val, true
 }
 
 // RPop
-func (ls *List[T]) RPop() T {
+func (ls *List[T]) RPop() (v T, ok bool) {
+	if ls.Len() == 0 {
+		return
+	}
 	val := ls.array[ls.Len()-1]
 	ls.array = ls.array[:ls.Len()-1]
-	return val
+	return val, true
 }
 
 // Remove
@@ -126,14 +132,19 @@ func (ls *List[T]) checkOrder() {
 	}
 }
 
-// Marshal: Marshal to bytes
-func (s *List[T]) Marshal() ([]byte, error) {
+// Marshal: Marshal to json bytes
+func (s *List[T]) MarshalJSON() ([]byte, error) {
 	return sonic.Marshal(s.array)
 }
 
-// Scan: Scan from bytes
-func (s *List[T]) Scan(src []byte) error {
+// Scan: Scan from json bytes
+func (s *List[T]) ScanJSON(src []byte) error {
 	return sonic.Unmarshal(src, &s)
+}
+
+// Values
+func (s *LSet[T]) Values() array[T] {
+	return s.array
 }
 
 // Print
