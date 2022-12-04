@@ -13,22 +13,21 @@ func NewMap[K comparable, V any]() Map[K, V] {
 	return Map[K, V]{}
 }
 
-// Load
-func (m Map[K, V]) Load(key K) (V, bool) {
+// Get
+func (m Map[K, V]) Get(key K) (V, bool) {
 	v, ok := m[key]
 	return v, ok
 }
 
-// Store
-func (m Map[K, V]) Store(key K, value V) {
+// Set
+func (m Map[K, V]) Set(key K, value V) {
 	m[key] = value
 }
 
-// StoreMany
-func (m Map[K, V]) StoreMany(keys []K, values []V) {
-	for i := range keys {
-		m[keys[i]] = values[i]
-	}
+// Exist
+func (m Map[K, V]) Exist(key K) bool {
+	_, ok := m[key]
+	return ok
 }
 
 // Delete
@@ -78,25 +77,49 @@ func NewSyncMap[K comparable, V any]() *SyncMap[K, V] {
 	}
 }
 
-// Store
-func (m *SyncMap[K, V]) Store(key K, value V) {
-	m.Lock()
-	defer m.Unlock()
-	m.m.Store(key, value)
-}
-
-// StoreMany
-func (m *SyncMap[K, V]) StoreMany(keys []K, values []V) {
-	m.Lock()
-	defer m.Unlock()
-	m.m.StoreMany(keys, values)
-}
-
-// Load
-func (m *SyncMap[K, V]) Load(key K) (V, bool) {
+// Get
+func (m *SyncMap[K, V]) Get(key K) (V, bool) {
 	m.RLock()
 	defer m.RUnlock()
-	return m.m.Load(key)
+	return m.m.Get(key)
+}
+
+// Gets
+func (m *SyncMap[K, V]) Gets(keys []K) []V {
+	m.RLock()
+	defer m.RUnlock()
+
+	res := make([]V, 0, len(keys))
+	for _, key := range keys {
+		temp, ok := m.m.Get(key)
+		if ok {
+			res = append(res, temp)
+		}
+	}
+	return res
+}
+
+// Set
+func (m *SyncMap[K, V]) Set(key K, value V) {
+	m.Lock()
+	defer m.Unlock()
+	m.m.Set(key, value)
+}
+
+// Sets
+func (m *SyncMap[K, V]) Sets(keys []K, values []V) {
+	m.Lock()
+	defer m.Unlock()
+	for i := range keys {
+		m.Set(keys[i], values[i])
+	}
+}
+
+// Exist
+func (m *SyncMap[K, V]) Exist(key K) bool {
+	m.RLock()
+	defer m.RUnlock()
+	return m.m.Exist(key)
 }
 
 // Delete

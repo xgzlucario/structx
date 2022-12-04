@@ -13,7 +13,7 @@ var (
 )
 
 const (
-	NoTTL = math.MaxInt64
+	NoTTL int64 = math.MaxInt64
 )
 
 type cacheItem[V any] struct {
@@ -49,23 +49,29 @@ func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 	if len(ttl) > 0 {
 		item.ttl = c.now + int64(ttl[0])
 	}
-	c.m.Store(key, item)
+	c.m.Set(key, item)
 }
 
 // StoreMany
-func (c *Cache[K, V]) StoreMany(keys []K, values []V) {
+func (c *Cache[K, V]) StoreMany(keys []K, values []V, ttl ...time.Duration) {
 	items := make([]*cacheItem[V], len(keys))
+	// ttl
+	_ttl := NoTTL
+	if len(ttl) > 0 {
+		_ttl = int64(ttl[0])
+	}
+
 	for i, v := range values {
 		items[i] = &cacheItem[V]{
-			value: v, ttl: NoTTL,
+			value: v, ttl: _ttl,
 		}
 	}
-	c.m.StoreMany(keys, items)
+	c.m.Sets(keys, items)
 }
 
 // StoreTTL
 func (c *Cache[K, V]) StoreTTL(key K, ttl time.Duration) bool {
-	item, ok := c.m.Load(key)
+	item, ok := c.m.Get(key)
 	if ok {
 		item.ttl = c.now + int64(ttl)
 		return true
@@ -76,7 +82,7 @@ func (c *Cache[K, V]) StoreTTL(key K, ttl time.Duration) bool {
 // Load
 func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
 	// check ttl
-	if item, ok := c.m.Load(key); ok && item.ttl > c.now {
+	if item, ok := c.m.Get(key); ok && item.ttl > c.now {
 		return item.value, true
 	}
 	return
