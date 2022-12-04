@@ -17,9 +17,9 @@ LSet (ListSet): map + list structure
 LSet has richer api and faster Intersect, Union, Range operations than mapset
 */
 type LSet[T comparable] struct {
-	m Map[T, struct{}]
-	*List[T]
 	flag bool
+	m    Map[T, struct{}]
+	*List[T]
 }
 
 // NewLSet: Create a new LSet
@@ -75,10 +75,12 @@ func (s *LSet[T]) Remove(key T) bool {
 }
 
 func (s *LSet[T]) remove(key T) {
+	// delete from map
 	if s.enable() {
 		delete(s.m, key)
 	}
-	s.Remove(key)
+	// delete from list
+	s.List.Remove(key)
 }
 
 // Exist
@@ -132,10 +134,10 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy max lset
 	max = max.Copy()
-	min.Range(func(_ int, k T) bool {
+
+	for _, k := range min.array {
 		max.Add(k)
-		return false
-	})
+	}
 	return max
 }
 
@@ -144,30 +146,29 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 	min, max := compareTwoLSet(this, t)
 	// should copy min lset
 	min = min.Copy()
-	min.Range(func(_ int, k T) bool {
+
+	for _, k := range min.array {
 		if !max.Exist(k) {
 			min.remove(k)
 		}
-		return false
-	})
+	}
 	return min
 }
 
 // Difference
 func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
 	newSet := NewLSet[T]()
-	this.Range(func(_ int, k T) bool {
+
+	for _, k := range this.array {
 		if !t.Exist(k) {
 			newSet.add(k)
 		}
-		return false
-	})
-	t.Range(func(_ int, k T) bool {
+	}
+	for _, k := range t.array {
 		if !this.Exist(k) {
 			newSet.add(k)
 		}
-		return false
-	})
+	}
 	return newSet
 }
 
@@ -177,21 +178,18 @@ func (this *LSet[T]) IsSubSet(t *LSet[T]) bool {
 		return false
 	}
 
-	ok := true
-	t.Range(func(_ int, t T) bool {
-		if !this.Exist(t) {
-			ok = false
-			return true
+	for _, v := range t.array {
+		if !this.Exist(v) {
+			return false
 		}
-		return false
-	})
-	return ok
+	}
+	return true
 }
 
 // LPop: Pop a elem from left
 func (this *LSet[T]) LPop() (v T, ok bool) {
 	v, ok = this.List.LPop()
-	if this.enable() {
+	if ok && this.enable() {
 		delete(this.m, v)
 	}
 	return
@@ -200,7 +198,7 @@ func (this *LSet[T]) LPop() (v T, ok bool) {
 // RPop: Pop a elem from right
 func (this *LSet[T]) RPop() (v T, ok bool) {
 	v, ok = this.List.RPop()
-	if this.enable() {
+	if ok && this.enable() {
 		delete(this.m, v)
 	}
 	return
