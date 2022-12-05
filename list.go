@@ -8,8 +8,8 @@ import (
 
 type List[T comparable] struct {
 	array[T]
-	order func(T, T) bool // Sort, IsSorted Used
-	less  func(T, T) bool // Max, Min Used
+	order func(T, T) bool // Sort(), IsSorted() Used
+	less  func(T, T) bool // Max(), Min() Used
 }
 
 // NewList: return new List
@@ -88,6 +88,7 @@ func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
 
 // Max: Should SetLess First
 func (ls *List[T]) Max() T {
+	ls.checkLess()
 	max := ls.array[0]
 	for _, v := range ls.array {
 		if ls.less(max, v) {
@@ -99,6 +100,7 @@ func (ls *List[T]) Max() T {
 
 // Min: Should SetLess First
 func (ls *List[T]) Min() T {
+	ls.checkLess()
 	min := ls.array[0]
 	for _, v := range ls.array {
 		if ls.less(v, min) {
@@ -108,38 +110,39 @@ func (ls *List[T]) Min() T {
 	return min
 }
 
-// Sort: Should SetLess First
+// Sort: Should SetOrder First
 func (ls *List[T]) Sort() *List[T] {
 	ls.checkOrder()
 	slices.SortFunc(ls.array, ls.order)
 	return ls
 }
 
-// IsSorted: Should SetLess First
+// IsSorted: Should SetOrder First
 func (ls *List[T]) IsSorted() bool {
 	ls.checkOrder()
 	return slices.IsSortedFunc(ls.array, ls.order)
 }
 
-// check if order is nil
-func (ls *List[T]) checkOrder() {
-	// default ascending, please set less first
-	if ls.order == nil {
-		if ls.less == nil {
-			panic("Please use SetLess() to init less first")
-		}
-		ls.order = ls.less
+func (ls *List[T]) checkLess() {
+	if ls.less == nil {
+		panic("Before used Min() or Max(), Please call SetLess() to init less first")
 	}
 }
 
-// Marshal: Marshal to json bytes
+func (ls *List[T]) checkOrder() {
+	if ls.order == nil {
+		panic("Before used Sort() or IsSorted(), Please call SetOrder() to init order first")
+	}
+}
+
+// MarshalJSON: Marshal to json
 func (s *List[T]) MarshalJSON() ([]byte, error) {
 	return sonic.Marshal(s.array)
 }
 
-// Scan: Scan from json bytes
-func (s *List[T]) ScanJSON(src []byte) error {
-	return sonic.Unmarshal(src, &s)
+// UnmarshalJSON: Unmarshal from json
+func (s *List[T]) UnmarshalJSON(src []byte) error {
+	return sonic.Unmarshal(src, &s.array)
 }
 
 // Values
@@ -148,6 +151,7 @@ func (s *LSet[T]) Values() array[T] {
 }
 
 // Print
-func (s *List[T]) Print() {
+func (s *List[T]) Print() *List[T] {
 	s.array.Print()
+	return s
 }

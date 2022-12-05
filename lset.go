@@ -216,12 +216,13 @@ func (this *LSet[T]) RandomPop() (v T, ok bool) {
 	return this.RPop()
 }
 
-// Scan: Scan from bytes
-func (s *LSet[T]) ScanJSON(src []byte) error {
-	if err := sonic.Unmarshal(src, &s.array); err != nil {
+// Unmarshal: Unmarshal from json
+func (s *LSet[T]) UnmarshalJSON(src []byte) error {
+	var ls []T
+	if err := sonic.Unmarshal(src, &ls); err != nil {
 		return err
 	}
-	*s = *NewLSet(s.array...)
+	*s = *NewLSet(ls...)
 	return nil
 }
 
