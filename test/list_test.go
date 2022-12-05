@@ -12,16 +12,16 @@ func getList() *structx.List[int] {
 	for i := 0; i < NUM; i++ {
 		l.RPush(i % 32)
 	}
-	l.SetLess(func(i, j int) bool {
-		return i < j
-	})
+
 	return l
 }
 
 func Benchmark_Sort1(b *testing.B) {
 	l := getList()
 	for i := 0; i < b.N; i++ {
-		l.Sort()
+		l.Sort(func(i, j int) bool {
+			return i < j
+		})
 	}
 }
 
@@ -39,6 +39,8 @@ func Benchmark_Sort2(b *testing.B) {
 func Benchmark_Max(b *testing.B) {
 	l := getList()
 	for i := 0; i < b.N; i++ {
-		l.Max()
+		l.Max(func(i, j int) bool {
+			return i < j
+		})
 	}
 }

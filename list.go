@@ -8,8 +8,6 @@ import (
 
 type List[T comparable] struct {
 	array[T]
-	order func(T, T) bool // Sort(), IsSorted() Used
-	less  func(T, T) bool // Max(), Min() Used
 }
 
 // NewList: return new List
@@ -74,65 +72,37 @@ func (ls *List[T]) Remove(elem T) bool {
 	return false
 }
 
-// SetOrder: Make list sortable. The input params is elements.
-func (ls *List[T]) SetOrder(f func(T, T) bool) *List[T] {
-	ls.order = f
-	return ls
-}
-
-// SetLess: Make list sortable. The input params is elements.
-func (ls *List[T]) SetLess(f func(T, T) bool) *List[T] {
-	ls.less = f
-	return ls
-}
-
-// Max: Should SetLess First
-func (ls *List[T]) Max() T {
-	ls.checkLess()
+// Max: Input param is Less function
+func (ls *List[T]) Max(less func(T, T) bool) T {
 	max := ls.array[0]
 	for _, v := range ls.array {
-		if ls.less(max, v) {
+		if less(max, v) {
 			max = v
 		}
 	}
 	return max
 }
 
-// Min: Should SetLess First
-func (ls *List[T]) Min() T {
-	ls.checkLess()
+// Min: Input param is Less function
+func (ls *List[T]) Min(less func(T, T) bool) T {
 	min := ls.array[0]
 	for _, v := range ls.array {
-		if ls.less(v, min) {
+		if less(v, min) {
 			min = v
 		}
 	}
 	return min
 }
 
-// Sort: Should SetOrder First
-func (ls *List[T]) Sort() *List[T] {
-	ls.checkOrder()
-	slices.SortFunc(ls.array, ls.order)
+// Sort: Input param is Order function
+func (ls *List[T]) Sort(order func(T, T) bool) *List[T] {
+	slices.SortFunc(ls.array, order)
 	return ls
 }
 
-// IsSorted: Should SetOrder First
-func (ls *List[T]) IsSorted() bool {
-	ls.checkOrder()
-	return slices.IsSortedFunc(ls.array, ls.order)
-}
-
-func (ls *List[T]) checkLess() {
-	if ls.less == nil {
-		panic("Before used Min() or Max(), Please call SetLess() to init less first")
-	}
-}
-
-func (ls *List[T]) checkOrder() {
-	if ls.order == nil {
-		panic("Before used Sort() or IsSorted(), Please call SetOrder() to init order first")
-	}
+// IsSorted: Input param is Order function
+func (ls *List[T]) IsSorted(order func(T, T) bool) bool {
+	return slices.IsSortedFunc(ls.array, order)
 }
 
 // MarshalJSON: Marshal to json
