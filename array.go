@@ -79,6 +79,11 @@ func (s array[T]) Range(f func(int, T) bool) {
 	}
 }
 
+// Values
+func (s array[T]) Values() []T {
+	return s
+}
+
 // Print
 func (s array[T]) Print() {
 	fmt.Println(s)

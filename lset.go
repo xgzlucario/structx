@@ -58,7 +58,7 @@ func (s *LSet[T]) add(key T) {
 	if s.flag {
 		s.m[key] = struct{}{}
 	} else {
-		for _, v := range s.Members() {
+		for _, v := range s.Values() {
 			s.m[v] = struct{}{}
 		}
 		s.flag = true
@@ -87,7 +87,7 @@ func (s *LSet[T]) remove(key T) {
 func (s *LSet[T]) Exist(key T) bool {
 	if s.Len() < LSET_MAX_SIZE {
 		// slice
-		for _, v := range s.Members() {
+		for _, v := range s.Values() {
 			if key == v {
 				return true
 			}
@@ -104,11 +104,11 @@ func (s *LSet[T]) Exist(key T) bool {
 func (s *LSet[T]) Copy() *LSet[T] {
 	lset := &LSet[T]{
 		m:    make(Map[T, struct{}], s.Len()),
-		List: NewList(s.Members()...),
+		List: NewList(s.Values()...),
 	}
 	// copy map
 	if lset.enable() {
-		for _, v := range s.Members() {
+		for _, v := range s.Values() {
 			s.m[v] = struct{}{}
 		}
 	}
@@ -121,7 +121,7 @@ func (s *LSet[T]) Equal(target *LSet[T]) bool {
 		return false
 	}
 
-	for _, val := range target.Members() {
+	for _, val := range target.Values() {
 		if !s.Exist(val) {
 			return false
 		}
@@ -214,11 +214,6 @@ func (this *LSet[T]) RandomPop() (v T, ok bool) {
 
 	this.Bottom(index)
 	return this.RPop()
-}
-
-// Members: Get all members
-func (s *LSet[T]) Members() array[T] {
-	return s.array
 }
 
 // Scan: Scan from bytes
