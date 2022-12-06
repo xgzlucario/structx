@@ -28,15 +28,13 @@ func (ls *List[T]) RPush(values ...T) *List[T] {
 }
 
 // Insert
-func (ls *List[T]) Insert(i int, value T) *List[T] {
+func (ls *List[T]) Insert(i int, values ...T) *List[T] {
 	if i <= 0 {
-		ls.LPush(value)
-
+		ls.LPush(values...)
 	} else if i >= ls.Len() {
-		ls.RPush(value)
-
+		ls.RPush(values...)
 	} else {
-		ls.array = append(append(ls.array[0:i], value), ls.array[i:]...)
+		ls.array = append(append(ls.array[0:i], values...), ls.array[i:]...)
 	}
 	return ls
 }

@@ -12,7 +12,14 @@ func getList() *structx.List[int] {
 	for i := 0; i < NUM; i++ {
 		l.RPush(i % 32)
 	}
+	return l
+}
 
+func getSlice() sort.IntSlice {
+	l := sort.IntSlice{}
+	for i := 0; i < NUM; i++ {
+		l = append(l, i%32)
+	}
 	return l
 }
 
@@ -26,11 +33,7 @@ func Benchmark_Sort1(b *testing.B) {
 }
 
 func Benchmark_Sort2(b *testing.B) {
-	l := sort.IntSlice{}
-	for i := 0; i < NUM; i++ {
-		l = append(l, i%32)
-	}
-
+	l := getSlice()
 	for i := 0; i < b.N; i++ {
 		l.Sort()
 	}

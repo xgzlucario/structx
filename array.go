@@ -1,6 +1,10 @@
 package structx
 
-import "fmt"
+import (
+	"fmt"
+
+	"golang.org/x/exp/slices"
+)
 
 type array[T comparable] []T
 
@@ -33,12 +37,7 @@ func (s array[T]) Index(i int) T {
 
 // Find: return the index of element
 func (s array[T]) Find(elem T) int {
-	for i, v := range s {
-		if v == elem {
-			return i
-		}
-	}
-	return -1
+	return slices.Index(s, elem)
 }
 
 // LShift: Shift all elements of the array left
