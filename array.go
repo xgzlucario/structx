@@ -64,9 +64,7 @@ func (s array[T]) Reverse() {
 
 // Copy
 func (s array[T]) Copy() array[T] {
-	newArr := make([]T, s.Len())
-	copy(newArr, s)
-	return newArr
+	return slices.Clone(s)
 }
 
 // Range

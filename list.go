@@ -92,6 +92,20 @@ func (ls *List[T]) Min(less func(T, T) bool) T {
 	return min
 }
 
+// Sum
+func (ls *List[T]) Sum(toNumber func(T) float64) float64 {
+	var sum float64
+	for _, v := range ls.array {
+		sum += toNumber(v)
+	}
+	return sum
+}
+
+// Mean
+func (ls *List[T]) Mean(toNumber func(T) float64) float64 {
+	return ls.Sum(toNumber) / float64(ls.Len())
+}
+
 // Sort: Input param is Order function
 func (ls *List[T]) Sort(order func(T, T) bool) *List[T] {
 	slices.SortFunc(ls.array, order)

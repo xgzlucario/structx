@@ -7,16 +7,6 @@ import (
 	"unicode"
 )
 
-// InSlice
-func InSlice[T Value](val T, arr []T) bool {
-	for _, v := range arr {
-		if val == v {
-			return true
-		}
-	}
-	return false
-}
-
 // Expression
 func Expression[T Value](isTrue bool, yes T, no T) T {
 	if isTrue {
@@ -42,24 +32,6 @@ func IsChinese(str string) bool {
 		}
 	}
 	return false
-}
-
-// Mean
-func Mean[T Number](arr []T) float64 {
-	var sum T
-	for _, i := range arr {
-		sum += i
-	}
-	return float64(sum) / float64(len(arr))
-}
-
-// Sum
-func Sum[T Number](arr []T) T {
-	var sum T
-	for _, i := range arr {
-		sum += i
-	}
-	return sum
 }
 
 // Go Job for every duration
