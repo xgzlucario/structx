@@ -69,8 +69,8 @@ func (c *Cache[K, V]) StoreMany(keys []K, values []V, ttl ...time.Duration) {
 	c.m.Sets(keys, items)
 }
 
-// StoreTTL
-func (c *Cache[K, V]) StoreTTL(key K, ttl time.Duration) bool {
+// SetTTL
+func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Get(key)
 	if ok {
 		item.ttl = c.now + int64(ttl)

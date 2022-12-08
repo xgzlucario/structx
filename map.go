@@ -49,11 +49,9 @@ func (m Map[K, V]) Range(f func(K, V) bool) {
 
 // Values
 func (m Map[K, V]) Values() []V {
-	values := make([]V, m.Len())
-	i := 0
+	values := make([]V, 0, m.Len())
 	for _, v := range m {
-		values[i] = v
-		i++
+		values = append(values, v)
 	}
 	return values
 }
