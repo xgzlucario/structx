@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type Pool[T any] struct {
-	work chan poolTask[T]
-	sem  chan struct{} // limit goroutine
+type Pool[T function] struct {
+	work chan poolTask[T] // work ch
+	sem  chan struct{}    // limit ch
 	wg   sync.WaitGroup
 }
 
-type poolTask[T any] struct {
-	work   func(...T)
-	params []T
+type poolTask[T function] struct {
+	work   func(T)
+	params T
 }
 
 // NewPool: Return new pool
-func NewPool[T any](size ...int) *Pool[T] {
+func NewPool[T function](size ...int) *Pool[T] {
 	// default
 	num := runtime.NumCPU()
 	if len(size) > 0 {
@@ -30,7 +30,7 @@ func NewPool[T any](size ...int) *Pool[T] {
 }
 
 // NewTask: Submit New Task
-func (p *Pool[T]) NewTask(task func(...T), params ...T) {
+func (p *Pool[T]) NewTask(task func(T), params T) {
 	p.wg.Add(1)
 	t := poolTask[T]{
 		work:   task,
@@ -48,14 +48,20 @@ func (p *Pool[T]) worker(t poolTask[T]) {
 	defer func() { <-p.sem }()
 	ok := true
 	for ok {
-		t.work(t.params...)
+		t.work(t.params)
 		p.wg.Done()
 		t, ok = <-p.work
 	}
 }
 
+// Wait
 func (p *Pool[T]) Wait() {
-	defer close(p.work)
-	defer close(p.sem)
 	p.wg.Wait()
+}
+
+// Close
+func (p *Pool[T]) Close() {
+	close(p.work)
+	close(p.sem)
+	p = nil
 }

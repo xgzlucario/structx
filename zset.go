@@ -1,17 +1,17 @@
 package structx
 
-type zslNode[K, V Value] struct {
+type zslNode[K, V value] struct {
 	key   K
 	value V
 }
 
-type ZSet[K, V Value] struct {
+type ZSet[K, V value] struct {
 	zsl *Skiplist[K, V]
 	m   Map[K, *zslNode[K, V]]
 }
 
 // NewZSet
-func NewZSet[K, V Value]() *ZSet[K, V] {
+func NewZSet[K, V value]() *ZSet[K, V] {
 	return &ZSet[K, V]{
 		zsl: NewSkipList[K, V](),
 		m:   Map[K, *zslNode[K, V]]{},

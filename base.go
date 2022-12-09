@@ -7,17 +7,27 @@ import (
 )
 
 // types
-type Signed constraints.Signed
+type signed constraints.Signed
 
-type Unsigned constraints.Unsigned
+type unsigned constraints.Unsigned
 
-type Integer constraints.Integer
+type integer constraints.Integer
 
-type Float constraints.Float
+type float constraints.Float
 
-type Number interface{ Integer | Float }
+type number interface{ integer | float }
 
-type Value constraints.Ordered
+type value constraints.Ordered
+
+type function interface {
+	~func(...string) | ~func(string) |
+		~func(...int) | ~func(int) |
+		~func(...int32) | ~func(int32) |
+		~func(...int64) | ~func(int64) |
+		~func(...float32) | ~func(float32) |
+		~func(...float64) | ~func(float64) |
+		~func(...any) | ~func(any)
+}
 
 // errors
 func errOutOfBounds(index int) error {
