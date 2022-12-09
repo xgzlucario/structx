@@ -21,13 +21,13 @@ type cacheItem[V any] struct {
 	ttl   int64 // expiredTime
 }
 
-type Cache[K value, V any] struct {
+type Cache[K Value, V any] struct {
 	m   *SyncMap[K, *cacheItem[V]]
 	now int64
 }
 
 // NewCache
-func NewCache[K value, V any]() *Cache[K, V] {
+func NewCache[K Value, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
 		m:   NewSyncMap[K, *cacheItem[V]](),
 		now: time.Now().UnixNano(),

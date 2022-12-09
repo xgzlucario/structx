@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type Pool[T function] struct {
+type Pool[T Function] struct {
 	work chan poolTask[T] // work ch
 	sem  chan struct{}    // limit ch
 	wg   sync.WaitGroup
 }
 
-type poolTask[T function] struct {
+type poolTask[T Function] struct {
 	work   func(T)
 	params T
 }
 
 // NewPool: Return new pool
-func NewPool[T function](size ...int) *Pool[T] {
+func NewPool[T Function](size ...int) *Pool[T] {
 	// default
 	num := runtime.NumCPU()
 	if len(size) > 0 {

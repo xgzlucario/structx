@@ -7,19 +7,19 @@ import (
 )
 
 // types
-type signed constraints.Signed
+type Signed constraints.Signed
 
-type unsigned constraints.Unsigned
+type Unsigned constraints.Unsigned
 
-type integer constraints.Integer
+type Integer constraints.Integer
 
-type float constraints.Float
+type Float constraints.Float
 
-type number interface{ integer | float }
+type Number interface{ Integer | Float }
 
-type value constraints.Ordered
+type Value constraints.Ordered
 
-type function interface {
+type Function interface {
 	~func(...string) | ~func(string) |
 		~func(...int) | ~func(int) |
 		~func(...int32) | ~func(int32) |
