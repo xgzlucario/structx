@@ -35,13 +35,17 @@ func IsChinese(str string) bool {
 }
 
 // Go Job for every duration
-func GoJob(f func(), duration time.Duration, delay ...time.Duration) {
+func GoJob(f func() bool, duration time.Duration, delay ...time.Duration) {
 	go func() {
+		// delay
 		for _, dl := range delay {
 			time.Sleep(dl)
 		}
 		for {
-			f()
+			// break if return true
+			if f() {
+				break
+			}
 			time.Sleep(duration)
 		}
 	}()
