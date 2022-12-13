@@ -8,7 +8,7 @@ import (
 )
 
 // Expression
-func Expression[T Value](isTrue bool, yes T, no T) T {
+func Expression[T any](isTrue bool, yes T, no T) T {
 	if isTrue {
 		return yes
 	} else {
