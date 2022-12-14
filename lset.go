@@ -17,8 +17,7 @@ LSet (ListSet): map + list structure
 LSet has richer api and faster Intersect, Union, Range operations than mapset
 */
 type LSet[T comparable] struct {
-	flag bool
-	m    Map[T, struct{}]
+	m Map[T, struct{}]
 	*List[T]
 }
 
@@ -36,7 +35,7 @@ func NewLSet[T comparable](values ...T) *LSet[T] {
 
 // is enable to use map
 func (s *LSet[T]) enable() bool {
-	return s.Len() > LSET_MAX_SIZE || s.flag
+	return s.Len() > LSET_MAX_SIZE || s.m.Len() > 0
 }
 
 // Add
@@ -55,13 +54,13 @@ func (s *LSet[T]) add(key T) {
 		return
 	}
 
-	if s.flag {
+	if s.m.Len() > 0 {
 		s.m[key] = struct{}{}
 	} else {
+		// init
 		for _, v := range s.Values() {
 			s.m[v] = struct{}{}
 		}
-		s.flag = true
 	}
 }
 
@@ -109,7 +108,7 @@ func (s *LSet[T]) Copy() *LSet[T] {
 	// copy map
 	if lset.enable() {
 		for _, v := range s.Values() {
-			s.m[v] = struct{}{}
+			lset.m[v] = struct{}{}
 		}
 	}
 	return lset
@@ -131,7 +130,7 @@ func (s *LSet[T]) Equal(target *LSet[T]) bool {
 
 // Union: Return the union of two sets
 func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
-	min, max := compareTwoLSet(this, t)
+	min, max := this.compareTwoLSet(t)
 	// should copy max lset
 	max = max.Copy()
 
@@ -143,7 +142,7 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 
 // Intersect
 func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
-	min, max := compareTwoLSet(this, t)
+	min, max := this.compareTwoLSet(t)
 	// should copy min lset
 	min = min.Copy()
 
@@ -227,8 +226,8 @@ func (s *LSet[T]) UnmarshalJSON(src []byte) error {
 }
 
 // Compare two lset length and return (*min, *max)
-func compareTwoLSet[T comparable](s1 *LSet[T], s2 *LSet[T]) (*LSet[T], *LSet[T]) {
-	if s1.Len() <= s2.Len() {
+func (s1 *LSet[T]) compareTwoLSet(s2 *LSet[T]) (*LSet[T], *LSet[T]) {
+	if s1.Len() < s2.Len() {
 		return s1, s2
 	}
 	return s2, s1

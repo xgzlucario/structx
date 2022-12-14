@@ -43,10 +43,10 @@ func (p *Pool[T]) NewTask(task func(...T), params ...T) {
 	}
 }
 
-// Do Task Forever
+// Do Task Backend
 func (p *Pool[T]) worker(t poolTask[T]) {
 	defer func() { <-p.sem }()
-	ok := true
+	var ok = true
 	for ok {
 		t.work(t.params...)
 		p.wg.Done()
@@ -54,8 +54,13 @@ func (p *Pool[T]) worker(t poolTask[T]) {
 	}
 }
 
+// Wait
 func (p *Pool[T]) Wait() {
-	defer close(p.work)
-	defer close(p.sem)
 	p.wg.Wait()
+}
+
+// Close
+func (p *Pool[T]) Close() {
+	close(p.work)
+	close(p.sem)
 }
