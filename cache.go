@@ -22,8 +22,14 @@ type cacheItem[V any] struct {
 }
 
 type Cache[K Value, V any] struct {
-	m   *SyncMap[K, *cacheItem[V]]
+	// current timestamp update by ticker
 	now int64
+
+	// call when cache miss
+	onMiss func(K)
+
+	// data
+	m *SyncMap[K, *cacheItem[V]]
 }
 
 // NewCache
@@ -81,11 +87,26 @@ func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 
 // Load
 func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
-	// check ttl
-	if item, ok := c.m.Get(key); ok && item.ttl > c.now {
-		return item.value, true
+	item, ok := c.m.Get(key)
+	if ok {
+		// check ttl
+		if item.ttl > c.now {
+			return item.value, true
+		}
+
+		// miss
+	} else {
+		if c.onMiss != nil {
+			c.onMiss(key)
+		}
 	}
 	return
+}
+
+// OnMiss
+func (c *Cache[K, V]) OnMiss(f func(key K)) *Cache[K, V] {
+	c.onMiss = f
+	return c
 }
 
 // Delete
@@ -98,10 +119,12 @@ func (c *Cache[K, V]) Clear() {
 	c.m.Clear()
 }
 
+// Len
 func (c *Cache[K, V]) Len() int {
 	return c.m.Len()
 }
 
+// Range
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
 		if v.ttl > c.now {
@@ -111,6 +134,7 @@ func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 	})
 }
 
+// RangeWithTTL
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
 		if v.ttl > c.now {
@@ -141,6 +165,7 @@ func (c *Cache[K, V]) gabCollect() {
 	}
 }
 
+// Print
 func (c *Cache[K, V]) Print() {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
 		fmt.Printf("%+v -> %+v\n", k, v.value)

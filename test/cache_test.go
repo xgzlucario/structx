@@ -4,82 +4,43 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/patrickmn/go-cache"
 	"github.com/xgzlucario/structx"
 )
 
-func getCache1() *structx.Cache[string, float64] {
-	s := structx.NewCache[string, float64]()
+func getCache() *structx.Cache[string, int] {
+	s := structx.NewCache[string, int]()
 	for i := 0; i < NUM; i++ {
-		s.Store(strconv.Itoa(i), float64(i))
+		s.Store(strconv.Itoa(i), i)
 	}
 	return s
 }
 
-func getCache2() *cache.Cache {
-	c := cache.New(cache.NoExpiration, structx.GCDuration)
-	for i := 0; i < NUM; i++ {
-		c.Set(strconv.Itoa(i), float64(i), cache.NoExpiration)
-	}
-	return c
-}
-
-// ========= Set =========
-func Benchmark_CacheSet1(b *testing.B) {
+func Benchmark_CacheSet(b *testing.B) {
+	s := structx.NewCache[string, int]()
 	for i := 0; i < b.N; i++ {
-		getCache1()
+		s.Store(strconv.Itoa(i), i)
 	}
 }
 
-func Benchmark_CacheSet2(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		getCache2()
-	}
-}
-
-// ========= Get =========
-func Benchmark_CacheGet1(b *testing.B) {
-	s := getCache1()
+func Benchmark_CacheGet(b *testing.B) {
+	s := getCache()
 	for i := 0; i < b.N; i++ {
 		s.Load(strconv.Itoa(i % NUM))
 	}
 }
 
-func Benchmark_CacheGet2(b *testing.B) {
-	s := getCache2()
-	for i := 0; i < b.N; i++ {
-		s.Get(strconv.Itoa(i % NUM))
-	}
-}
-
-// ========= Delete =========
-func Benchmark_CacheDel1(b *testing.B) {
-	s := getCache1()
+func Benchmark_CacheDelete(b *testing.B) {
+	s := getCache()
 	for i := 0; i < b.N; i++ {
 		s.Delete(strconv.Itoa(i % NUM))
 	}
 }
 
-func Benchmark_CacheDel2(b *testing.B) {
-	s := getCache2()
+func Benchmark_CacheRange(b *testing.B) {
+	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Delete(strconv.Itoa(i % NUM))
-	}
-}
-
-// ========= Range =========
-func Benchmark_CacheRange1(b *testing.B) {
-	s := getCache1()
-	for i := 0; i < b.N; i++ {
-		s.Range(func(key string, value float64) bool {
+		s.Range(func(key string, value int) bool {
 			return false
 		})
-	}
-}
-
-func Benchmark_CacheRange2(b *testing.B) {
-	s := getCache2()
-	for i := 0; i < b.N; i++ {
-		s.Items()
 	}
 }
