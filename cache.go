@@ -7,11 +7,19 @@ import (
 	"time"
 )
 
+// Modifiable configuration
 var (
+	// duration of expired keys evictions
 	GCDuration = time.Minute
+
+	// duration of update current timestamp
+	TickerDuration = time.Millisecond
+
+	// default expiry time
 	DefaultTTL = time.Minute * 10
 )
 
+// Non-modifiable configuration
 const (
 	NoTTL int64 = math.MaxInt64
 )
@@ -23,20 +31,24 @@ type cacheItem[V any] struct {
 
 type Cache[K Value, V any] struct {
 	// current timestamp update by ticker
-	now int64
+	_now int64
 
-	// call when cache miss
-	onMiss func(K)
+	// call when key-value expired
+	onExpired func(K, V)
 
 	// data
 	m *SyncMap[K, *cacheItem[V]]
 }
 
+func (c *Cache[K, V]) now() int64 {
+	return atomic.LoadInt64(&c._now)
+}
+
 // NewCache
 func NewCache[K Value, V any]() *Cache[K, V] {
 	cache := &Cache[K, V]{
-		m:   NewSyncMap[K, *cacheItem[V]](),
-		now: time.Now().UnixNano(),
+		m:    NewSyncMap[K, *cacheItem[V]](),
+		_now: time.Now().UnixNano(),
 	}
 
 	// start gc and ticker
@@ -53,7 +65,7 @@ func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 	}
 	// with ttl
 	if len(ttl) > 0 {
-		item.ttl = c.now + int64(ttl[0])
+		item.ttl = c.now() + int64(ttl[0])
 	}
 	c.m.Set(key, item)
 }
@@ -79,7 +91,7 @@ func (c *Cache[K, V]) StoreMany(keys []K, values []V, ttl ...time.Duration) {
 func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Get(key)
 	if ok {
-		item.ttl = c.now + int64(ttl)
+		item.ttl = c.now() + int64(ttl)
 		return true
 	}
 	return false
@@ -89,23 +101,17 @@ func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
 	item, ok := c.m.Get(key)
 	if ok {
-		// check ttl
-		if item.ttl > c.now {
+		// check expired
+		if item.ttl > c.now() {
 			return item.value, true
-		}
-
-		// miss
-	} else {
-		if c.onMiss != nil {
-			c.onMiss(key)
 		}
 	}
 	return
 }
 
-// OnMiss
-func (c *Cache[K, V]) OnMiss(f func(key K)) *Cache[K, V] {
-	c.onMiss = f
+// OnExpired
+func (c *Cache[K, V]) OnExpired(f func(K, V)) *Cache[K, V] {
+	c.onExpired = f
 	return c
 }
 
@@ -127,7 +133,7 @@ func (c *Cache[K, V]) Len() int {
 // Range
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > c.now {
+		if v.ttl > c.now() {
 			return f(k, v.value)
 		}
 		return false
@@ -137,7 +143,7 @@ func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 // RangeWithTTL
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > c.now {
+		if v.ttl > c.now() {
 			return f(k, v.value, v.ttl)
 		}
 		return false
@@ -146,8 +152,8 @@ func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 
 func (c *Cache[K, V]) ticker() {
 	for c != nil {
-		time.Sleep(time.Millisecond)
-		atomic.SwapInt64(&c.now, time.Now().UnixNano())
+		time.Sleep(TickerDuration)
+		atomic.SwapInt64(&c._now, time.Now().UnixNano())
 	}
 }
 
@@ -157,7 +163,11 @@ func (c *Cache[K, V]) gabCollect() {
 		c.m.Lock()
 		// clear expired keys
 		for key, item := range c.m.m {
-			if item.ttl < c.now {
+			if item.ttl < c.now() {
+				// onExpired
+				if c.onExpired != nil {
+					c.onExpired(key, item.value)
+				}
 				delete(c.m.m, key)
 			}
 		}
