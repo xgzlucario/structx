@@ -51,8 +51,7 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 		_now: time.Now().UnixNano(),
 	}
 
-	// start gc and ticker
-	go cache.gabCollect()
+	go cache.eviction()
 	go cache.ticker()
 
 	return cache
@@ -150,6 +149,7 @@ func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 	})
 }
 
+// Scheduled update current timestamp
 func (c *Cache[K, V]) ticker() {
 	for c != nil {
 		time.Sleep(TickerDuration)
@@ -157,7 +157,8 @@ func (c *Cache[K, V]) ticker() {
 	}
 }
 
-func (c *Cache[K, V]) gabCollect() {
+// Scheduled expired keys evictions
+func (c *Cache[K, V]) eviction() {
 	for c != nil {
 		time.Sleep(GCDuration)
 		c.m.Lock()
