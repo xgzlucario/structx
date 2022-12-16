@@ -44,3 +44,11 @@ func Benchmark_CacheRange(b *testing.B) {
 		})
 	}
 }
+
+func Benchmark_CacheTable(b *testing.B) {
+	table := structx.NewCacheTable[string, int]()
+	for i := 0; i < b.N; i++ {
+		str := strconv.Itoa(i)
+		table.Table(str).Store(str, i)
+	}
+}
