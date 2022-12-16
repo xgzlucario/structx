@@ -72,12 +72,8 @@ func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 // StoreMany
 func (c *Cache[K, V]) StoreMany(keys []K, values []V, ttl ...time.Duration) {
 	items := make([]*cacheItem[V], len(keys))
+	_ttl := Expression(len(ttl) > 0, int64(ttl[0]), NoTTL)
 	// ttl
-	_ttl := NoTTL
-	if len(ttl) > 0 {
-		_ttl = int64(ttl[0])
-	}
-
 	for i, v := range values {
 		items[i] = &cacheItem[V]{
 			value: v, ttl: _ttl,
