@@ -157,7 +157,7 @@ func (c *Cache[K, V]) ticker() {
 func (c *Cache[K, V]) eviction() {
 	for c != nil {
 		time.Sleep(GCDuration)
-		c.m.Lock()
+		c.m.mu.Lock()
 		// clear expired keys
 		for key, item := range c.m.m {
 			if item.ttl < c.now() {
@@ -168,7 +168,7 @@ func (c *Cache[K, V]) eviction() {
 				delete(c.m.m, key)
 			}
 		}
-		c.m.Unlock()
+		c.m.mu.Unlock()
 	}
 }
 
