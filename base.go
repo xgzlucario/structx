@@ -27,7 +27,3 @@ func errOutOfBounds(index int) error {
 func errKeyNotFound(key any) error {
 	return fmt.Errorf("error: key[%v] not found", key)
 }
-
-func errTableNotFound(key any) error {
-	return fmt.Errorf("error: table[%v] not found", key)
-}
