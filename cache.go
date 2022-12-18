@@ -111,7 +111,7 @@ func (c *Cache[K, V]) OnExpired(f func(K, V)) *Cache[K, V] {
 }
 
 // Delete
-func (c *Cache[K, V]) Delete(key K) bool {
+func (c *Cache[K, V]) Delete(key K) error {
 	return c.m.Delete(key)
 }
 

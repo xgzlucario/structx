@@ -23,3 +23,18 @@ func (t *CacheTable[K, V]) Table(table string) *Cache[K, V] {
 	t.m.Set(table, cache)
 	return cache
 }
+
+// DropTable
+func (t *CacheTable[K, V]) DropTable(table string) error {
+	return t.m.Delete(table)
+}
+
+// Tables
+func (t *CacheTable[K, V]) Tables() []string {
+	tables := make([]string, 0, t.m.Len())
+	t.m.Range(func(t string, _ *Cache[K, V]) bool {
+		tables = append(tables, t)
+		return false
+	})
+	return tables
+}

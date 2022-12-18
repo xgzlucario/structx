@@ -61,7 +61,7 @@ func (m *SyncMap[K, V]) Exist(key K) bool {
 }
 
 // Delete
-func (m *SyncMap[K, V]) Delete(key K) bool {
+func (m *SyncMap[K, V]) Delete(key K) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.m.Delete(key)

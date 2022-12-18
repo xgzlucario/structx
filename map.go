@@ -29,13 +29,13 @@ func (m Map[K, V]) Exist(key K) bool {
 }
 
 // Delete
-func (m Map[K, V]) Delete(key K) bool {
+func (m Map[K, V]) Delete(key K) error {
 	_, ok := m[key]
 	if ok {
 		delete(m, key)
-		return true
+		return nil
 	}
-	return false
+	return errKeyNotFound(key)
 }
 
 // Range

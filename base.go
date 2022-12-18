@@ -21,9 +21,13 @@ type Value constraints.Ordered
 
 // errors
 func errOutOfBounds(index int) error {
-	return fmt.Errorf("index[%d] out of bounds", index)
+	return fmt.Errorf("error: index[%d] out of bounds", index)
 }
 
 func errKeyNotFound(key any) error {
-	return fmt.Errorf("key[%v] not found", key)
+	return fmt.Errorf("error: key[%v] not found", key)
+}
+
+func errTableNotFound(key any) error {
+	return fmt.Errorf("error: table[%v] not found", key)
 }
