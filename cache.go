@@ -5,6 +5,8 @@ import (
 	"math"
 	"sync/atomic"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 // Modifiable configuration
@@ -57,6 +59,31 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 	return cache
 }
 
+// Load
+func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
+	item, ok := c.m.Get(key)
+	if ok {
+		// check expired
+		if item.ttl > c.now() {
+			return item.value, true
+		}
+	}
+	return
+}
+
+// LoadMany
+func (c *Cache[K, V]) LoadMany(keys []K) []V {
+	items := c.m.Gets(keys)
+
+	values := make([]V, 0, len(items))
+	for _, item := range items {
+		if item.ttl > c.now() {
+			values = append(values, item.value)
+		}
+	}
+	return slices.Clip(values)
+}
+
 // Store
 func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
@@ -90,18 +117,6 @@ func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 		return true
 	}
 	return false
-}
-
-// Load
-func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
-	item, ok := c.m.Get(key)
-	if ok {
-		// check expired
-		if item.ttl > c.now() {
-			return item.value, true
-		}
-	}
-	return
 }
 
 // OnExpired

@@ -1,6 +1,10 @@
 package structx
 
-import "sync"
+import (
+	"sync"
+
+	"golang.org/x/exp/slices"
+)
 
 // SynMap: generic version of sync.Map
 type SyncMap[K comparable, V any] struct {
@@ -34,7 +38,7 @@ func (m *SyncMap[K, V]) Gets(keys []K) []V {
 			res = append(res, temp)
 		}
 	}
-	return res
+	return slices.Clip(res)
 }
 
 // Set

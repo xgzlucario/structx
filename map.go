@@ -2,6 +2,8 @@ package structx
 
 import (
 	"fmt"
+
+	"golang.org/x/exp/slices"
 )
 
 type Map[K comparable, V any] map[K]V
@@ -53,7 +55,7 @@ func (m Map[K, V]) Values() []V {
 	for _, v := range m {
 		values = append(values, v)
 	}
-	return values
+	return slices.Clip(values)
 }
 
 // Len
