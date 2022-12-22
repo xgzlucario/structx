@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/bytedance/sonic v1.6.0
 	github.com/liyiheng/zset v0.0.0-20211012035528-6679b37ff27a
-	golang.org/x/exp v0.0.0-20221215174704-0915cd710c24
+	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
 )
 
 require (

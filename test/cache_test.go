@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -51,4 +52,23 @@ func Benchmark_CacheTable(b *testing.B) {
 		str := strconv.Itoa(i)
 		table.Table(str).Store(str, i)
 	}
+}
+
+func Benchmark_BitMapTest(b *testing.B) {
+	bm := structx.NewBitMap(100)
+	bm.Set(2)
+	bm.Set(4)
+	bm.Set(5)
+	// bm.Delete(2)
+	// bm.Set(17)
+
+	var a byte = 4
+	var c byte = 6
+
+	a |= 1 << 3
+	c &= 0 << 2
+	fmt.Println(
+		a, c,
+		bm.Exist(4), bm.Exist(8), bm.Exist(2), bm.Exist(5), bm.Exist(17),
+	)
 }
