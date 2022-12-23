@@ -12,8 +12,8 @@ func NewBitMap() *BitMap {
 	return new(BitMap)
 }
 
-// Set
-func (bm *BitMap) Set(num uint) {
+// Add
+func (bm *BitMap) Add(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
 	for word >= uint(len(bm.words)) {
 		bm.words = append(bm.words, 0)
@@ -23,7 +23,10 @@ func (bm *BitMap) Set(num uint) {
 	if bm.words[word]&(1<<bit) == 0 {
 		bm.words[word] |= 1 << bit
 		bm.len++
+		return true
 	}
+
+	return false
 }
 
 // Remove
@@ -47,6 +50,22 @@ func (bm *BitMap) Remove(num uint) bool {
 func (bm *BitMap) Exist(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
 	return word < uint(len(bm.words)) && (bm.words[word]&(1<<bit)) != 0
+}
+
+// GetMax
+func (bm *BitMap) GetMax() int {
+	if bm.len == 0 {
+		return -1
+	}
+
+	n := len(bm.words) - 1
+	word := bm.words[n]
+	for i := bitSize - 1; i >= 0; i-- {
+		if word&(1<<i) != 0 {
+			return bitSize*n + i
+		}
+	}
+	return -1
 }
 
 // Len

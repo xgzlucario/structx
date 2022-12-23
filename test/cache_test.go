@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -52,13 +51,4 @@ func Benchmark_CacheTable(b *testing.B) {
 		str := strconv.Itoa(i)
 		table.Table(str).Store(str, i)
 	}
-}
-
-func Benchmark_BitMapTest(b *testing.B) {
-	bm := structx.NewBitMap()
-	bm.Set(22)
-	bm.Set(5)
-	bm.Set(8)
-	bm.Set(4)
-	fmt.Println(bm.ToSlice())
 }
