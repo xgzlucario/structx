@@ -1,5 +1,7 @@
 package structx
 
+import "github.com/bytedance/sonic"
+
 const bitSize = 64 // uint64 is 64 bits
 
 type BitMap struct {
@@ -52,6 +54,25 @@ func (bm *BitMap) Exist(num uint) bool {
 	return word < uint(len(bm.words)) && (bm.words[word]&(1<<bit)) != 0
 }
 
+// GetMin
+func (bm *BitMap) GetMin() int {
+	if bm.len == 0 {
+		return -1
+	}
+
+	for i, v := range bm.words {
+		if v == 0 {
+			continue
+		}
+		for j := uint(0); j < bitSize; j++ {
+			if v&(1<<j) != 0 {
+				return int(bitSize*uint(i) + j)
+			}
+		}
+	}
+	return -1
+}
+
 // GetMax
 func (bm *BitMap) GetMax() int {
 	if bm.len == 0 {
@@ -73,7 +94,31 @@ func (bm *BitMap) Len() int {
 	return bm.len
 }
 
-// ToSlice
+type marshalBitMap struct {
+	Words []uint64
+	Len   int
+}
+
+// MarshalJSON
+func (bm *BitMap) MarshalJSON() ([]byte, error) {
+	return sonic.Marshal(marshalBitMap{
+		Words: bm.words,
+		Len:   bm.len,
+	})
+}
+
+// UnmarshalJSON
+func (bm *BitMap) UnmarshalJSON(src []byte) error {
+	var t marshalBitMap
+	if err := sonic.Unmarshal(src, &t); err != nil {
+		return err
+	}
+	bm.words = t.Words
+	bm.len = t.Len
+	return nil
+}
+
+// ToSlice: Not recommended for poor performance
 func (bm *BitMap) ToSlice() []uint {
 	arr := make([]uint, 0, bm.len)
 	for i, v := range bm.words {

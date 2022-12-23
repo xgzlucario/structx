@@ -8,7 +8,7 @@ import (
 
 func getBitMap() *structx.BitMap {
 	bm := structx.NewBitMap()
-	for i := 0; i < NUM; i++ {
+	for i := 0; i < 100000000; i++ {
 		bm.Add(uint(i))
 	}
 	return bm
@@ -42,9 +42,16 @@ func Benchmark_BitMapGetMax(b *testing.B) {
 	}
 }
 
-func Benchmark_BitMapToSlice(b *testing.B) {
+func Benchmark_BitMapGetMin(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.ToSlice()
+		bm.GetMin()
+	}
+}
+
+func Benchmark_BitMapMarshal(b *testing.B) {
+	bm := getBitMap()
+	for i := 0; i < b.N; i++ {
+		bm.MarshalJSON()
 	}
 }
