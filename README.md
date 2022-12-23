@@ -11,6 +11,7 @@ Currently, structx provides the following types of data structures to support ge
 - `Pool`
 - `Skiplist`
 - `Cache`
+- `BitMap`
 
 ### List
 
@@ -27,19 +28,12 @@ ls.Reverse() // [4,3,2]
 ls.Index(1) // 3
 ls.Find(4) // 0
 
-// shift
 ls.RShift() // [2,4,3]
 ls.Top(1) // [4,2,3]
 
-// Less
-ls.SetLess(func(i, j int) bool {
-	return l.Index(i) < l.Index(j)
-})
-// Ascending
-ls.SetOrder(true)
-
-ls.Sort() // [2,3,4]
-ls.Max() // 4
+ls.Sort(func(i, j int) bool {
+	return i<j
+}) // [2,3,4]
 ```
 
 ### LSet
