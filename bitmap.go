@@ -92,24 +92,25 @@ func (bm *BitMap) Len() int {
 	return bm.len
 }
 
+type marshalBitMap struct {
+	Words []uint64
+	Len   int
+}
+
 // Marshal
 func (bm *BitMap) Marshal() ([]byte, error) {
-	return marshalBin(append(bm.words, uint64(bm.len)))
+	return marshalJSON(marshalBitMap{bm.words, bm.len})
 }
 
 // Unmarshal
 func (bm *BitMap) Unmarshal(src []byte) error {
-	err := unmarshalBin(src, bm.words)
-	if err != nil {
+	var b marshalBitMap
+	if err := unmarshalJSON(src, &b); err != nil {
 		return err
 	}
 
-	n := len(bm.words)
-	if n == 0 {
-		return errScanBinaryData()
-	}
-	bm.len = int(bm.words[n-1])
-	bm.words = bm.words[:n-1]
+	bm.words = b.Words
+	bm.len = b.Len
 	return nil
 }
 

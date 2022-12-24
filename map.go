@@ -63,6 +63,16 @@ func (m Map[K, V]) Len() int {
 	return len(m)
 }
 
+// Marshal
+func (m Map[K, V]) Marshal() ([]byte, error) {
+	return marshalJSON(m)
+}
+
+// Unmarshal
+func (m Map[K, V]) Unmarshal(src []byte) error {
+	return unmarshalJSON(src, m)
+}
+
 // Print
 func (m Map[K, V]) Print() {
 	m.Range(func(k K, v V) bool {

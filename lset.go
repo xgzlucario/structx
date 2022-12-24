@@ -213,13 +213,12 @@ func (this *LSet[T]) RandomPop() (v T, ok bool) {
 	return this.RPop()
 }
 
-// Unmarshal: Unmarshal from binary data
+// Unmarshal: Unmarshal from JSON
 func (s *LSet[T]) Unmarshal(src []byte) error {
-	var ls []T
-	if err := unmarshalBin(src, &ls); err != nil {
+	if err := unmarshalJSON(src, &s.array); err != nil {
 		return err
 	}
-	*s = *NewLSet(ls...)
+	*s = *NewLSet(s.array...)
 	return nil
 }
 

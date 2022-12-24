@@ -117,12 +117,12 @@ func (ls *List[T]) IsSorted(order func(T, T) bool) bool {
 
 // Marshal
 func (s *List[T]) Marshal() ([]byte, error) {
-	return marshalBin(s.array)
+	return marshalJSON(s.array)
 }
 
 // Unmarshal
 func (s *List[T]) Unmarshal(src []byte) error {
-	return unmarshalBin(src, &s.array)
+	return unmarshalJSON(src, &s.array)
 }
 
 // Values

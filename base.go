@@ -1,10 +1,9 @@
 package structx
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	"golang.org/x/exp/constraints"
 )
 
@@ -30,19 +29,11 @@ func errKeyNotFound(key any) error {
 	return fmt.Errorf("error: key[%v] not found", key)
 }
 
-func errScanBinaryData() error {
-	return fmt.Errorf("error: scan binary data")
-}
-
 // =============== Marshal ===============
-func marshalBin(data any) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.BigEndian, data)
-	return buf.Bytes(), err
+func marshalJSON(data any) ([]byte, error) {
+	return sonic.Marshal(data)
 }
 
-func unmarshalBin(src []byte, data any) error {
-	buf := new(bytes.Buffer)
-	buf.Read(src)
-	return binary.Read(buf, binary.BigEndian, data)
+func unmarshalJSON(src []byte, data any) error {
+	return sonic.Unmarshal(src, data)
 }
