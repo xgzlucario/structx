@@ -73,6 +73,6 @@ func Benchmark_IsSubSet(b *testing.B) {
 func Benchmark_Marshal(b *testing.B) {
 	s1 := getListSet()
 	for i := 0; i < b.N; i++ {
-		s1.MarshalJSON()
+		s1.Marshal()
 	}
 }

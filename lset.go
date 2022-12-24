@@ -3,8 +3,6 @@ package structx
 import (
 	"math/rand"
 	"time"
-
-	"github.com/bytedance/sonic"
 )
 
 /*
@@ -215,10 +213,10 @@ func (this *LSet[T]) RandomPop() (v T, ok bool) {
 	return this.RPop()
 }
 
-// Unmarshal: Unmarshal from json
-func (s *LSet[T]) UnmarshalJSON(src []byte) error {
+// Unmarshal: Unmarshal from binary data
+func (s *LSet[T]) Unmarshal(src []byte) error {
 	var ls []T
-	if err := sonic.Unmarshal(src, &ls); err != nil {
+	if err := unmarshalBin(src, &ls); err != nil {
 		return err
 	}
 	*s = *NewLSet(ls...)

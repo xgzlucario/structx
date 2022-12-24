@@ -2,8 +2,6 @@ package structx
 
 import (
 	"golang.org/x/exp/slices"
-
-	"github.com/bytedance/sonic"
 )
 
 type List[T comparable] struct {
@@ -117,14 +115,14 @@ func (ls *List[T]) IsSorted(order func(T, T) bool) bool {
 	return slices.IsSortedFunc(ls.array, order)
 }
 
-// MarshalJSON: Marshal to json
-func (s *List[T]) MarshalJSON() ([]byte, error) {
-	return sonic.Marshal(s.array)
+// Marshal
+func (s *List[T]) Marshal() ([]byte, error) {
+	return marshalBin(s.array)
 }
 
-// UnmarshalJSON: Unmarshal from json
-func (s *List[T]) UnmarshalJSON(src []byte) error {
-	return sonic.Unmarshal(src, &s.array)
+// Unmarshal
+func (s *List[T]) Unmarshal(src []byte) error {
+	return unmarshalBin(src, &s.array)
 }
 
 // Values

@@ -1,7 +1,5 @@
 package structx
 
-import "github.com/bytedance/sonic"
-
 const bitSize = 64 // uint64 is 64 bits
 
 type BitMap struct {
@@ -94,27 +92,24 @@ func (bm *BitMap) Len() int {
 	return bm.len
 }
 
-type marshalBitMap struct {
-	Words []uint64
-	Len   int
+// Marshal
+func (bm *BitMap) Marshal() ([]byte, error) {
+	return marshalBin(append(bm.words, uint64(bm.len)))
 }
 
-// MarshalJSON
-func (bm *BitMap) MarshalJSON() ([]byte, error) {
-	return sonic.Marshal(marshalBitMap{
-		Words: bm.words,
-		Len:   bm.len,
-	})
-}
-
-// UnmarshalJSON
-func (bm *BitMap) UnmarshalJSON(src []byte) error {
-	var t marshalBitMap
-	if err := sonic.Unmarshal(src, &t); err != nil {
+// Unmarshal
+func (bm *BitMap) Unmarshal(src []byte) error {
+	err := unmarshalBin(src, bm.words)
+	if err != nil {
 		return err
 	}
-	bm.words = t.Words
-	bm.len = t.Len
+
+	n := len(bm.words)
+	if n == 0 {
+		return errScanBinaryData()
+	}
+	bm.len = int(bm.words[n-1])
+	bm.words = bm.words[:n-1]
 	return nil
 }
 

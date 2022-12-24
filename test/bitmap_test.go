@@ -52,6 +52,14 @@ func Benchmark_BitMapGetMin(b *testing.B) {
 func Benchmark_BitMapMarshal(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.MarshalJSON()
+		bm.Marshal()
+	}
+}
+
+func Benchmark_BitMapUnmarshal(b *testing.B) {
+	bm := getBitMap()
+	buf, _ := bm.Marshal()
+	for i := 0; i < b.N; i++ {
+		bm.Unmarshal(buf)
 	}
 }
