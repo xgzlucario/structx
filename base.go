@@ -44,6 +44,5 @@ func marshalBin(data any) ([]byte, error) {
 func unmarshalBin(src []byte, data any) error {
 	buf := new(bytes.Buffer)
 	buf.Read(src)
-
 	return binary.Read(buf, binary.BigEndian, data)
 }
