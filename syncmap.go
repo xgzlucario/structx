@@ -99,6 +99,20 @@ func (m *SyncMap[K, V]) Len() int {
 	return m.m.Len()
 }
 
+// Marshal
+func (m *SyncMap[K, V]) Marshal() ([]byte, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return marshalJSON(m.m)
+}
+
+// Unmarshal
+func (m *SyncMap[K, V]) Unmarshal(src []byte) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return unmarshalJSON(src, m.m)
+}
+
 // Print
 func (m *SyncMap[K, V]) Print() {
 	m.mu.RLock()
