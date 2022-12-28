@@ -3,11 +3,13 @@ package structx
 import (
 	"runtime"
 	"sync"
+	"sync/atomic"
 )
 
 type Pool[T any] struct {
-	work chan poolTask[T]
 	sem  chan struct{} // limit goroutine
+	work chan poolTask[T]
+	len  *int32
 	wg   sync.WaitGroup
 }
 
@@ -26,6 +28,7 @@ func NewPool[T any](size ...int) *Pool[T] {
 	return &Pool[T]{
 		work: make(chan poolTask[T]),
 		sem:  make(chan struct{}, num),
+		len:  new(int32),
 	}
 }
 
@@ -38,8 +41,11 @@ func (p *Pool[T]) NewTask(task func(...T), params ...T) {
 	}
 	select {
 	case p.work <- t:
+		atomic.AddInt32(p.len, 1)
+
 	case p.sem <- struct{}{}:
 		go p.worker(t)
+		atomic.AddInt32(p.len, 1)
 	}
 }
 
@@ -50,6 +56,7 @@ func (p *Pool[T]) worker(t poolTask[T]) {
 	for ok {
 		t.work(t.params...)
 		p.wg.Done()
+		atomic.AddInt32(p.len, -1)
 		t, ok = <-p.work
 	}
 }
@@ -57,6 +64,11 @@ func (p *Pool[T]) worker(t poolTask[T]) {
 // Wait
 func (p *Pool[T]) Wait() {
 	p.wg.Wait()
+}
+
+// Len
+func (p *Pool[T]) Len() int32 {
+	return atomic.LoadInt32(p.len)
 }
 
 // Close

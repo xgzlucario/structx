@@ -176,11 +176,11 @@ func (c *Cache[K, V]) eviction() {
 		// clear expired keys
 		for key, item := range c.m.m {
 			if item.ttl < c.now() {
+				delete(c.m.m, key)
 				// onExpired
 				if c.onExpired != nil {
 					c.onExpired(key, item.value)
 				}
-				delete(c.m.m, key)
 			}
 		}
 		c.m.mu.Unlock()
