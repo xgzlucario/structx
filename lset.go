@@ -56,7 +56,7 @@ func (s *LSet[T]) add(key T) {
 		s.m[key] = struct{}{}
 	} else {
 		// init
-		for _, v := range s.Values() {
+		for _, v := range s.array {
 			s.m[v] = struct{}{}
 		}
 	}
@@ -84,7 +84,7 @@ func (s *LSet[T]) remove(key T) {
 func (s *LSet[T]) Exist(key T) bool {
 	if s.Len() < LSET_MAX_SIZE {
 		// slice
-		for _, v := range s.Values() {
+		for _, v := range s.array {
 			if key == v {
 				return true
 			}
@@ -101,11 +101,11 @@ func (s *LSet[T]) Exist(key T) bool {
 func (s *LSet[T]) Copy() *LSet[T] {
 	lset := &LSet[T]{
 		m:    make(Map[T, struct{}], s.Len()),
-		List: NewList(s.Values()...),
+		List: NewList(s.array...),
 	}
 	// copy map
 	if lset.enable() {
-		for _, v := range s.Values() {
+		for _, v := range s.array {
 			lset.m[v] = struct{}{}
 		}
 	}
@@ -118,7 +118,7 @@ func (s *LSet[T]) Equal(target *LSet[T]) bool {
 		return false
 	}
 
-	for _, val := range target.Values() {
+	for _, val := range target.array {
 		if !s.Exist(val) {
 			return false
 		}
@@ -184,28 +184,25 @@ func (this *LSet[T]) IsSubSet(t *LSet[T]) bool {
 }
 
 // LPop: Pop a elem from left
-func (this *LSet[T]) LPop() (v T, ok bool) {
-	v, ok = this.List.LPop()
-	if ok && this.enable() {
+func (this *LSet[T]) LPop() T {
+	v := this.List.LPop()
+	if this.enable() {
 		delete(this.m, v)
 	}
-	return
+	return v
 }
 
 // RPop: Pop a elem from right
-func (this *LSet[T]) RPop() (v T, ok bool) {
-	v, ok = this.List.RPop()
-	if ok && this.enable() {
+func (this *LSet[T]) RPop() T {
+	v := this.List.RPop()
+	if this.enable() {
 		delete(this.m, v)
 	}
-	return
+	return v
 }
 
 // RandomPop: Pop a random elem
-func (this *LSet[T]) RandomPop() (v T, ok bool) {
-	if this.Len() == 0 {
-		return
-	}
+func (this *LSet[T]) RandomPop() T {
 	rand.Seed(time.Now().UnixNano())
 	index := rand.Intn(this.Len())
 

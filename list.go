@@ -38,30 +38,24 @@ func (ls *List[T]) Insert(i int, values ...T) *List[T] {
 }
 
 // LPop
-func (ls *List[T]) LPop() (v T, ok bool) {
-	if ls.Len() == 0 {
-		return
-	}
+func (ls *List[T]) LPop() T {
 	val := ls.array[0]
 	ls.array = ls.array[1:]
-	return val, true
+	return val
 }
 
 // RPop
-func (ls *List[T]) RPop() (v T, ok bool) {
-	if ls.Len() == 0 {
-		return
-	}
+func (ls *List[T]) RPop() T {
 	val := ls.array[ls.Len()-1]
 	ls.array = ls.array[:ls.Len()-1]
-	return val, true
+	return val
 }
 
 // Remove
 func (ls *List[T]) Remove(elem T) bool {
 	for i, v := range ls.array {
 		if v == elem {
-			ls.array = append(ls.array[:i], ls.array[i+1:]...)
+			ls.array = slices.Delete(ls.array, i, i+1)
 			return true
 		}
 	}
