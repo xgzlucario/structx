@@ -1,76 +1,99 @@
 package structx
 
-import "fmt"
+import (
+	"fmt"
+
+	"golang.org/x/exp/slices"
+)
 
 type Trie[T any] struct {
 	isEnd    bool
-	path     rune   // current path(char)
+	path     rune   // current path
 	fullPath string // fullPath from root node
 	data     T
+
+	parent   *Trie[T]
 	children []*Trie[T]
 }
 
+// NewTrie
 func NewTrie[T any]() *Trie[T] {
 	return new(Trie[T])
 }
 
+// Insert
 func (t *Trie[T]) Insert(word string, data ...T) {
-	var flag bool
-	var node = t
+	cur := t
+	for index, ch := range word {
+		// match
+		i := slices.IndexFunc(cur.children, func(t *Trie[T]) bool {
+			return t.path == ch
+		})
 
-	for _, ch := range word {
-		flag = false
-		// search children
-		for _, child := range node.children {
-			// match
-			if child.path == ch {
-				node = child
-				flag = true
-				break
-			}
-		}
+		if i >= 0 {
+			cur = cur.children[i]
 
-		// create children
-		if !flag {
-			newNode := &Trie[T]{path: ch, fullPath: word}
+		} else {
+			// add children
+			node := &Trie[T]{path: ch, fullPath: word[:index] + string(ch), parent: cur}
 			if len(data) > 0 {
-				newNode.data = data[0]
+				node.data = data[0]
 			}
-			node.children = append(node.children, newNode)
-			node = newNode
+			cur.children = append(cur.children, node)
+			cur = node
 		}
 	}
-	node.isEnd = true
+	cur.isEnd = true
 }
 
-func (t *Trie[T]) SearchPrefix(prefix string) *Trie[T] {
+// Delete
+func (t *Trie[T]) Delete(word string) error {
+	// search
+	node := t.Search(word)
+	if node == nil {
+		return fmt.Errorf("word[%s] not exist", word)
+	}
+
+	p := node.parent
+	i := slices.IndexFunc(p.children, func(t *Trie[T]) bool {
+		return t == node
+	})
+
+	// delete
+	p.children = append(p.children[:i], p.children[i+1:]...)
+	return nil
+}
+
+// Search
+func (t *Trie[T]) Search(prefix string) *Trie[T] {
 	node := t
 	for _, ch := range prefix {
-		for _, c := range node.children {
-			if c.path == ch {
-				node = c
-				break
-			}
+		// match
+		i := slices.IndexFunc(node.children, func(t *Trie[T]) bool {
+			return t.path == ch
+		})
+		if i < 0 {
+			return nil
 		}
+		node = node.children[i]
 	}
 	return node
 }
 
-func (t *Trie[T]) Search(word string) (v T, ok bool) {
-	node := t.SearchPrefix(word)
-	if node != nil && node.isEnd {
-		v = node.data
-		ok = true
-	}
-	return
+// GetData
+func (t *Trie[T]) GetData() T {
+	return t.data
 }
 
+// PrintChildren
 func (t *Trie[T]) PrintChildren() {
+	fmt.Printf("[parent] fullPath: %s, path: %c, isEnd: %v\n", t.fullPath, t.path, t.isEnd)
 	for _, c := range t.children {
-		fmt.Printf("fullPath: %s, path: %c, isEnd: %v\n", c.fullPath, c.path, c.isEnd)
+		fmt.Printf("[child] fullPath: %s, path: %c, isEnd: %v\n", c.fullPath, c.path, c.isEnd)
 	}
 }
 
+// Print
 func (t *Trie[T]) Print() {
 	var printChildrens func(n *Trie[T])
 
