@@ -21,8 +21,8 @@ func NewTrie[T any]() *Trie[T] {
 	return new(Trie[T])
 }
 
-// Insert
-func (t *Trie[T]) Insert(word string, data ...T) {
+// Insert:
+func (t *Trie[T]) Insert(word string, data ...T) error {
 	cur := t
 	for index, ch := range word {
 		// match
@@ -36,14 +36,15 @@ func (t *Trie[T]) Insert(word string, data ...T) {
 		} else {
 			// add children
 			node := &Trie[T]{path: ch, fullPath: word[:index] + string(ch), parent: cur}
-			if len(data) > 0 {
-				node.data = data[0]
-			}
 			cur.children = append(cur.children, node)
 			cur = node
 		}
 	}
 	cur.isEnd = true
+	if len(data) > 0 {
+		cur.data = data[0]
+	}
+	return nil
 }
 
 // Delete
@@ -87,9 +88,11 @@ func (t *Trie[T]) GetData() T {
 
 // PrintChildren
 func (t *Trie[T]) PrintChildren() {
-	fmt.Printf("[parent] fullPath: %s, path: %c, isEnd: %v\n", t.fullPath, t.path, t.isEnd)
+	fmt.Printf("[parent] fullPath: %s, path: %c, isEnd: %v, data: %v\n",
+		t.fullPath, t.path, t.isEnd, t.data)
 	for _, c := range t.children {
-		fmt.Printf("[child] fullPath: %s, path: %c, isEnd: %v\n", c.fullPath, c.path, c.isEnd)
+		fmt.Printf("-[child] fullPath: %s, path: %c, isEnd: %v, data: %v\n",
+			c.fullPath, c.path, c.isEnd, c.data)
 	}
 }
 

@@ -72,13 +72,16 @@ func Benchmark_MapDelete(b *testing.B) {
 }
 
 func Benchmark_TrieTest(b *testing.B) {
-	t := structx.NewTrie[struct{}]()
+	t := structx.NewTrie[int]()
 	t.Insert("12358")
 	t.Insert("124673")
 	t.Insert("12458")
+	t.Insert("12458", 1)
+	t.Insert("12458", 2)
+	t.Insert("12458", 3)
 	t.Insert("1249")
 	t.Insert("1243")
 
-	t.Search("124").PrintChildren()
+	t.Search("1245").PrintChildren()
 	fmt.Println()
 }
