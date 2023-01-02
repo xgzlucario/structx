@@ -60,7 +60,7 @@ func (t *Trie[T]) Delete(word string) error {
 	})
 
 	// delete
-	p.children = append(p.children[:i], p.children[i+1:]...)
+	p.children = slices.Delete(p.children, i, i+1)
 	return nil
 }
 

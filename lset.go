@@ -77,7 +77,7 @@ func (s *LSet[T]) remove(key T) {
 		delete(s.m, key)
 	}
 	// delete from list
-	s.List.Remove(key)
+	s.List.RemoveElem(key)
 }
 
 // Exist

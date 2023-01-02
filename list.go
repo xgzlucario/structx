@@ -1,6 +1,8 @@
 package structx
 
 import (
+	"fmt"
+
 	"golang.org/x/exp/slices"
 )
 
@@ -32,7 +34,7 @@ func (ls *List[T]) Insert(i int, values ...T) *List[T] {
 	} else if i >= ls.Len() {
 		ls.RPush(values...)
 	} else {
-		ls.array = append(append(ls.array[0:i], values...), ls.array[i:]...)
+		ls.array = slices.Insert(ls.array, i, values...)
 	}
 	return ls
 }
@@ -51,15 +53,21 @@ func (ls *List[T]) RPop() T {
 	return val
 }
 
-// Remove
-func (ls *List[T]) Remove(elem T) bool {
+// RemoveElem
+func (ls *List[T]) RemoveElem(elem T) error {
 	for i, v := range ls.array {
 		if v == elem {
 			ls.array = slices.Delete(ls.array, i, i+1)
-			return true
+			return nil
 		}
 	}
-	return false
+	return fmt.Errorf("elem[%v] not exist", elem)
+}
+
+// Delete
+func (ls *List[T]) Delete(i, j int) *List[T] {
+	ls.array = slices.Delete(ls.array, i, j)
+	return ls
 }
 
 // Max: Input param is Less function

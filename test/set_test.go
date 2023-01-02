@@ -28,7 +28,9 @@ func Benchmark_Range(b *testing.B) {
 func Benchmark_Pop(b *testing.B) {
 	s := getListSet()
 	for i := 0; i < b.N; i++ {
-		s.RandomPop()
+		if s.Len() > 0 {
+			s.RandomPop()
+		}
 	}
 }
 
