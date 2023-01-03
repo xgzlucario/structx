@@ -7,36 +7,51 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
+const cacheSize = 99999
+
 func getCache() *structx.Cache[string, int] {
 	s := structx.NewCache[int]()
-	for i := 0; i < NUM; i++ {
+	for i := 0; i < cacheSize; i++ {
 		s.Set(strconv.Itoa(i), i)
 	}
 	return s
 }
 
-func Benchmark_CacheSet(b *testing.B) {
+func BenchmarkCacheSet(b *testing.B) {
 	s := structx.NewCache[int]()
 	for i := 0; i < b.N; i++ {
 		s.Set(strconv.Itoa(i), i)
 	}
 }
 
-func Benchmark_CacheGet(b *testing.B) {
+func BenchmarkCacheMSet(b *testing.B) {
 	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Get(strconv.Itoa(i % NUM))
+		s.MSet(map[string]int{
+			strconv.Itoa(i):     i,
+			strconv.Itoa(i + 1): i,
+			strconv.Itoa(i + 2): i,
+			strconv.Itoa(i + 3): i,
+			strconv.Itoa(i + 4): i,
+		})
 	}
 }
 
-func Benchmark_CacheDelete(b *testing.B) {
+func BenchmarkCacheGet(b *testing.B) {
 	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Delete(strconv.Itoa(i % NUM))
+		s.Get(strconv.Itoa(i))
 	}
 }
 
-func Benchmark_CacheRange(b *testing.B) {
+func BenchmarkCacheDelete(b *testing.B) {
+	s := getCache()
+	for i := 0; i < b.N; i++ {
+		s.Delete(strconv.Itoa(i))
+	}
+}
+
+func BenchmarkCacheRange(b *testing.B) {
 	s := getCache()
 	for i := 0; i < b.N; i++ {
 		s.Range(func(key string, value int) bool {
@@ -44,11 +59,3 @@ func Benchmark_CacheRange(b *testing.B) {
 		})
 	}
 }
-
-// func Benchmark_CacheTable(b *testing.B) {
-// 	table := structx.NewCacheTable[string, int]()
-// 	for i := 0; i < b.N; i++ {
-// 		str := strconv.Itoa(i)
-// 		table.Table(str).Store(str, i)
-// 	}
-// }

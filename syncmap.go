@@ -33,4 +33,5 @@ func (m *SyncMap[K, V]) Print() {
 		fmt.Printf("%+v -> %+v\n", k, v)
 		return false
 	})
+	fmt.Println()
 }

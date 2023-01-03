@@ -85,7 +85,10 @@ func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 // MSet
 func (c *Cache[K, V]) MSet(values map[K]V, ttl ...time.Duration) {
 	items := make(map[K]*cacheItem[V], len(values))
-	_ttl := Expression(len(ttl) > 0, int64(ttl[0]), NoTTL)
+	_ttl := NoTTL
+	if len(ttl) > 0 {
+		_ttl = int64(ttl[0])
+	}
 	// ttl
 	for k, v := range values {
 		items[k] = &cacheItem[V]{
