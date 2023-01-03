@@ -1,12 +1,11 @@
 package structx
 
 import (
-	"fmt"
 	"math"
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/exp/slices"
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 // Modifiable configuration
@@ -31,12 +30,12 @@ type cacheItem[V any] struct {
 	ttl   int64 // expiredTime
 }
 
-type Cache[K Value, V any] struct {
+type Cache[K string, V any] struct {
 	// current timestamp update by ticker
 	_now int64
 
 	// call when key-value expired
-	onExpired func(K, V)
+	onExpired cmap.RemoveCb[string, V]
 
 	// data
 	m *SyncMap[K, *cacheItem[V]]
@@ -47,9 +46,9 @@ func (c *Cache[K, V]) now() int64 {
 }
 
 // NewCache
-func NewCache[K Value, V any]() *Cache[K, V] {
-	cache := &Cache[K, V]{
-		m:    NewSyncMap[K, *cacheItem[V]](),
+func NewCache[V any]() *Cache[string, V] {
+	cache := &Cache[string, V]{
+		m:    NewSyncMap[*cacheItem[V]](),
 		_now: time.Now().UnixNano(),
 	}
 
@@ -59,8 +58,8 @@ func NewCache[K Value, V any]() *Cache[K, V] {
 	return cache
 }
 
-// Load
-func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
+// Get
+func (c *Cache[K, V]) Get(key K) (v V, ok bool) {
 	item, ok := c.m.Get(key)
 	if ok {
 		// check expired
@@ -71,21 +70,8 @@ func (c *Cache[K, V]) Load(key K) (v V, ok bool) {
 	return
 }
 
-// LoadMany
-func (c *Cache[K, V]) LoadMany(keys []K) []V {
-	items := c.m.Gets(keys)
-
-	values := make([]V, 0, len(items))
-	for _, item := range items {
-		if item.ttl > c.now() {
-			values = append(values, item.value)
-		}
-	}
-	return slices.Clip(values)
-}
-
-// Store
-func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
+// Set
+func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
 		value: value, ttl: NoTTL,
 	}
@@ -96,17 +82,17 @@ func (c *Cache[K, V]) Store(key K, value V, ttl ...time.Duration) {
 	c.m.Set(key, item)
 }
 
-// StoreMany
-func (c *Cache[K, V]) StoreMany(keys []K, values []V, ttl ...time.Duration) {
-	items := make([]*cacheItem[V], len(keys))
+// MSet
+func (c *Cache[K, V]) MSet(keys []K, values []V, ttl ...time.Duration) {
+	items := make(map[K]*cacheItem[V], len(keys))
 	_ttl := Expression(len(ttl) > 0, int64(ttl[0]), NoTTL)
 	// ttl
 	for i, v := range values {
-		items[i] = &cacheItem[V]{
+		items[keys[i]] = &cacheItem[V]{
 			value: v, ttl: _ttl,
 		}
 	}
-	c.m.Sets(keys, items)
+	c.m.MSet(items)
 }
 
 // SetTTL
@@ -120,14 +106,14 @@ func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 }
 
 // OnExpired
-func (c *Cache[K, V]) OnExpired(f func(K, V)) *Cache[K, V] {
+func (c *Cache[K, V]) OnExpired(f cmap.RemoveCb[string, V]) *Cache[K, V] {
 	c.onExpired = f
 	return c
 }
 
 // Delete
-func (c *Cache[K, V]) Delete(key K) error {
-	return c.m.Delete(key)
+func (c *Cache[K, V]) Delete(key K) {
+	c.m.Remove(key)
 }
 
 // Clear
@@ -137,7 +123,7 @@ func (c *Cache[K, V]) Clear() {
 
 // Len
 func (c *Cache[K, V]) Len() int {
-	return c.m.Len()
+	return c.m.Count()
 }
 
 // Range
@@ -172,25 +158,23 @@ func (c *Cache[K, V]) ticker() {
 func (c *Cache[K, V]) eviction() {
 	for c != nil {
 		time.Sleep(GCDuration)
-		c.m.mu.Lock()
-		// clear expired keys
-		for key, item := range c.m.m {
+
+		c.m.Range(func(key K, item *cacheItem[V]) bool {
+			// clear expired keys
 			if item.ttl < c.now() {
-				delete(c.m.m, key)
 				// onExpired
 				if c.onExpired != nil {
-					c.onExpired(key, item.value)
+					// c.m.RemoveCb(key, c.onExpired)
+				} else {
+					c.m.Remove(key)
 				}
 			}
-		}
-		c.m.mu.Unlock()
+			return false
+		})
 	}
 }
 
 // Print
 func (c *Cache[K, V]) Print() {
-	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		fmt.Printf("%+v -> %+v\n", k, v.value)
-		return false
-	})
+	c.m.Print()
 }

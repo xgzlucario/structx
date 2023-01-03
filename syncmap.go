@@ -1,121 +1,37 @@
 package structx
 
 import (
-	"sync"
+	"fmt"
 
-	"golang.org/x/exp/slices"
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
-// SynMap: generic version of sync.Map
+// SynMap: use ConcurrentMap
 type SyncMap[K comparable, V any] struct {
-	mu sync.RWMutex
-	m  Map[K, V]
+	cmap.ConcurrentMap[K, V]
 }
 
 // NewSyncMap
-func NewSyncMap[K comparable, V any]() *SyncMap[K, V] {
-	return &SyncMap[K, V]{
-		m: NewMap[K, V](),
+func NewSyncMap[V any]() *SyncMap[string, V] {
+	return &SyncMap[string, V]{
+		cmap.New[V](),
 	}
-}
-
-// Get
-func (m *SyncMap[K, V]) Get(key K) (V, bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.m.Get(key)
-}
-
-// Gets
-func (m *SyncMap[K, V]) Gets(keys []K) []V {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	res := make([]V, 0, len(keys))
-	for _, key := range keys {
-		temp, ok := m.m.Get(key)
-		if ok {
-			res = append(res, temp)
-		}
-	}
-	return slices.Clip(res)
-}
-
-// Set
-func (m *SyncMap[K, V]) Set(key K, value V) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.m.Set(key, value)
-}
-
-// Sets
-func (m *SyncMap[K, V]) Sets(keys []K, values []V) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	for i := range keys {
-		m.Set(keys[i], values[i])
-	}
-}
-
-// Exist
-func (m *SyncMap[K, V]) Exist(key K) bool {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.m.Exist(key)
-}
-
-// Delete
-func (m *SyncMap[K, V]) Delete(key K) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return m.m.Delete(key)
 }
 
 // Range
-func (m *SyncMap[K, V]) Range(f func(K, V) bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	m.m.Range(f)
-}
-
-// Values
-func (m *SyncMap[K, V]) Values() []V {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.m.Values()
-}
-
-// Clear
-func (m *SyncMap[K, V]) Clear() {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.m = NewMap[K, V]()
-}
-
-// Len
-func (m *SyncMap[K, V]) Len() int {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.m.Len()
-}
-
-// Marshal
-func (m *SyncMap[K, V]) Marshal() ([]byte, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return marshalJSON(m.m)
-}
-
-// Unmarshal
-func (m *SyncMap[K, V]) Unmarshal(src []byte) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return unmarshalJSON(src, m.m)
+func (m *SyncMap[K, V]) Range(f func(key K, value V) bool) {
+	ch := m.IterBuffered()
+	for t := range ch {
+		if f(t.Key, t.Val) {
+			break
+		}
+	}
 }
 
 // Print
 func (m *SyncMap[K, V]) Print() {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	m.m.Print()
+	m.Range(func(k K, v V) bool {
+		fmt.Printf("%+v -> %+v\n", k, v)
+		return false
+	})
 }

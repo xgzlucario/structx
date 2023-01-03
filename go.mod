@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/bytedance/sonic v1.6.0
 	github.com/liyiheng/zset v0.0.0-20211012035528-6679b37ff27a
+	github.com/orcaman/concurrent-map/v2 v2.0.1
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
 )
 
