@@ -18,19 +18,20 @@ func (id UserID) String() string {
 	return fmt.Sprintf("%d", id)
 }
 
-// SignIn 每日签到数据结构
+// SignIn: Daily SignIn Data Structure
 type SignIn struct {
 	dateLogs *structx.SyncMap[DateID, *structx.BitMap]
 	userLogs *structx.SyncMap[UserID, *structx.BitMap]
 }
 
-var zeroTime = time.Time{}
+var (
+	// ZeroTime: Make sure the signIn date is greater than ZeroTime
+	ZeroTime, _ = time.Parse("2006-01-02", "2023-01-01")
+)
 
-// ParseDateInt
+// ParseDateInt: Return days to ZeroTime
 func ParseDateInt(date time.Time) DateID {
-	// 距离 zeroTime 所差天数
-	days := date.Sub(zeroTime).Hours() / 24
-	return DateID(days)
+	return DateID(date.Sub(ZeroTime).Hours() / 24)
 }
 
 // NewSignIn
@@ -41,7 +42,7 @@ func NewSignIn() *SignIn {
 	}
 }
 
-// Sign 签到
+// Sign
 func (s *SignIn) Sign(userID UserID, dateID DateID) {
 	// userLog
 	bm, ok := s.userLogs.Get(userID)
@@ -60,7 +61,7 @@ func (s *SignIn) Sign(userID UserID, dateID DateID) {
 	bm.Add(uint(userID))
 }
 
-// UserCount 获取用户签到天数
+// UserCount: Get the number of days users have signed in
 func (s *SignIn) UserCount(id UserID) int {
 	bm, ok := s.userLogs.Get(id)
 	if !ok {
@@ -69,7 +70,7 @@ func (s *SignIn) UserCount(id UserID) int {
 	return bm.Len()
 }
 
-// UserDetails 获取用户签到日期详情
+// UserDetails: Get user sign-in date slices
 func (s *SignIn) UserDetails(id UserID) []uint {
 	bm, ok := s.userLogs.Get(id)
 	if !ok {
@@ -78,7 +79,7 @@ func (s *SignIn) UserDetails(id UserID) []uint {
 	return bm.ToSlice()
 }
 
-// UserGetMax 获取用户最近签到日期
+// UserGetMax: Get the user's most recent sign-in date
 func (s *SignIn) UserGetMax(id UserID) int {
 	bm, ok := s.userLogs.Get(id)
 	if !ok {
@@ -87,7 +88,7 @@ func (s *SignIn) UserGetMax(id UserID) int {
 	return bm.GetMax()
 }
 
-// DateCount 获取当日签到总量
+// DateCount: Get the total number of sign-in for the day
 func (s *SignIn) DateCount(id DateID) int {
 	bm, ok := s.dateLogs.Get(id)
 	if !ok {
