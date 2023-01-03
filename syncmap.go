@@ -20,8 +20,7 @@ func NewSyncMap[V any]() *SyncMap[string, V] {
 
 // Range
 func (m *SyncMap[K, V]) Range(f func(key K, value V) bool) {
-	ch := m.IterBuffered()
-	for t := range ch {
+	for t := range m.IterBuffered() {
 		if f(t.Key, t.Val) {
 			break
 		}
