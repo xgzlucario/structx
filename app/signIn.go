@@ -49,7 +49,7 @@ func (s *SignIn) Sign(userID UserID, dateID DateID) {
 		bm = structx.NewBitMap()
 		s.userLogs.Set(userID, bm)
 	}
-	bm.Add(uint(userID))
+	bm.Add(uint(dateID))
 
 	// dateLog
 	bm, ok = s.dateLogs.Get(dateID)
@@ -57,7 +57,7 @@ func (s *SignIn) Sign(userID UserID, dateID DateID) {
 		bm = structx.NewBitMap()
 		s.dateLogs.Set(dateID, bm)
 	}
-	bm.Add(uint(dateID))
+	bm.Add(uint(userID))
 }
 
 // UserCount 获取用户签到天数

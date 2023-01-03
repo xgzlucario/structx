@@ -25,7 +25,6 @@ func (bm *BitMap) Add(num uint) bool {
 		bm.len++
 		return true
 	}
-
 	return false
 }
 
@@ -42,7 +41,6 @@ func (bm *BitMap) Remove(num uint) bool {
 		bm.len--
 		return true
 	}
-
 	return false
 }
 

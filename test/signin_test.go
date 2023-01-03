@@ -12,6 +12,8 @@ func BenchmarkSignIn(b *testing.B) {
 	now := app.ParseDateInt(time.Now())
 
 	for i := 0; i < b.N; i++ {
-		s.Sign(app.UserID(i), now)
+		for j := 0; j < 10; j++ {
+			s.Sign(app.UserID(i), now+app.DateID(j))
+		}
 	}
 }
