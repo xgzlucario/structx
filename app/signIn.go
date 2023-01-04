@@ -2,30 +2,25 @@ package app
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/xgzlucario/structx"
 )
 
-type UserID uint
-type DateID uint
+type userID uint
+type dateID uint
 
-func (id DateID) String() string {
-	return fmt.Sprintf("%d", id)
+func (id userID) String() string {
+	return strconv.Itoa(int(id))
 }
 
-func (id DateID) ToDate() time.Time {
-	return ZeroTime.AddDate(0, 0, int(id))
+func (id dateID) String() string {
+	return strconv.Itoa(int(id))
 }
 
-func (id UserID) String() string {
-	return fmt.Sprintf("%d", id)
-}
-
-// SignIn: Daily SignIn Data Structure
-type SignIn struct {
-	dateLogs *structx.SyncMap[DateID, *structx.BitMap]
-	userLogs *structx.SyncMap[UserID, *structx.BitMap]
+func (id dateID) ToDate() time.Time {
+	return ZeroTime.Add(time.Duration(id) * oneDay)
 }
 
 var (
@@ -33,30 +28,37 @@ var (
 	ZeroTime, _ = time.Parse("2006-01-02", "2023-01-01")
 )
 
-// ParseDateInt: Return days to ZeroTime
-func ParseDateInt(date time.Time) DateID {
-	return DateID(date.Sub(ZeroTime).Hours() / 24)
+const (
+	oneDay = time.Hour * 24
+)
+
+// SignIn: Daily SignIn Data Structure
+type SignIn struct {
+	dateLogs *structx.SyncMap[dateID, *structx.BitMap]
+	userLogs *structx.SyncMap[userID, *structx.BitMap]
 }
 
-// NewSignIn
+// NewSignIn 构造函数
 func NewSignIn() *SignIn {
 	return &SignIn{
-		dateLogs: structx.NewSyncMapStringer[DateID, *structx.BitMap](),
-		userLogs: structx.NewSyncMapStringer[UserID, *structx.BitMap](),
+		dateLogs: structx.NewSyncMapStringer[dateID, *structx.BitMap](),
+		userLogs: structx.NewSyncMapStringer[userID, *structx.BitMap](),
 	}
 }
 
-// Sign
-func (s *SignIn) Sign(userID UserID, dateID DateID) error {
+// Sign 签到
+func (s *SignIn) Sign(userId uint, date time.Time) error {
+	userID, dateID := userID(userId), s.parseDateID(date)
+
 	// userLog
 	bm, ok := s.userLogs.Get(userID)
 	if !ok {
 		bm = structx.NewBitMap()
 		s.userLogs.Set(userID, bm)
 	}
-	// check if already sign-in
+	// check if sign-in
 	if ok = bm.Add(uint(dateID)); ok {
-		return fmt.Errorf("userID[%d] dateID[%d] already signed in", userID, dateID)
+		return fmt.Errorf("user[%v] date[%v] already signed in", userID, dateID)
 	}
 
 	// dateLog
@@ -65,45 +67,68 @@ func (s *SignIn) Sign(userID UserID, dateID DateID) error {
 		bm = structx.NewBitMap()
 		s.dateLogs.Set(dateID, bm)
 	}
-	// check if already sign-in
+	// check if sign-in
 	if ok = bm.Add(uint(userID)); ok {
-		return fmt.Errorf("userID[%d] dateID[%d] already signed in", userID, dateID)
+		return fmt.Errorf("user[%v] date[%v] already signed in", userID, dateID)
 	}
+
 	return nil
 }
 
 // UserCount: Get the number of days users have signed in
-func (s *SignIn) UserCount(id UserID) int {
-	bm, ok := s.userLogs.Get(id)
+// 用户签到总天数
+func (s *SignIn) UserCount(userId uint) int {
+	bm, ok := s.userLogs.Get(userID(userId))
 	if !ok {
 		return -1
 	}
+
 	return bm.Len()
 }
 
-// UserDetails: Get user sign-in date slices
-func (s *SignIn) UserDetails(id UserID) []uint {
-	bm, ok := s.userLogs.Get(id)
+// UserDates: Get user sign-in date slices
+// 用户签到日期列表
+func (s *SignIn) UserDates(userId uint) []time.Time {
+	bm, ok := s.userLogs.Get(userID(userId))
 	if !ok {
 		return nil
 	}
-	return bm.ToSlice()
+
+	// parse timeSlice
+	dateIDs := bm.ToSlice()
+	times := make([]time.Time, 0, len(dateIDs))
+	for _, id := range dateIDs {
+		times = append(times, dateID(id).ToDate())
+	}
+
+	return times
 }
 
-// UserGetMax: Get the user's most recent sign-in date
-func (s *SignIn) UserGetMax(id UserID) int {
-	bm, ok := s.userLogs.Get(id)
+// UserRecentDate: Get the user's most recent sign-in date
+// 用户最近签到日期
+func (s *SignIn) UserRecentDate(userId uint) time.Time {
+	bm, ok := s.userLogs.Get(userID(userId))
 	if !ok {
-		return -1
+		return time.Time{}
 	}
-	return bm.GetMax()
+	id := bm.GetMax()
+	
+	return dateID(id).ToDate()
 }
 
 // DateCount: Get the total number of sign-in for the day
-func (s *SignIn) DateCount(id DateID) int {
+// 当日签到数量统计
+func (s *SignIn) DateCount(date time.Time) int {
+	id := s.parseDateID(date)
 	bm, ok := s.dateLogs.Get(id)
 	if !ok {
 		return -1
 	}
+
 	return bm.Len()
+}
+
+// parseDateID: Return days to ZeroTime
+func (s *SignIn) parseDateID(date time.Time) dateID {
+	return dateID(date.Sub(ZeroTime) / oneDay)
 }
