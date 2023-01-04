@@ -14,6 +14,10 @@ func (id DateID) String() string {
 	return fmt.Sprintf("%d", id)
 }
 
+func (id DateID) ToDate() time.Time {
+	return ZeroTime.AddDate(0, 0, int(id))
+}
+
 func (id UserID) String() string {
 	return fmt.Sprintf("%d", id)
 }
@@ -43,14 +47,17 @@ func NewSignIn() *SignIn {
 }
 
 // Sign
-func (s *SignIn) Sign(userID UserID, dateID DateID) {
+func (s *SignIn) Sign(userID UserID, dateID DateID) error {
 	// userLog
 	bm, ok := s.userLogs.Get(userID)
 	if !ok {
 		bm = structx.NewBitMap()
 		s.userLogs.Set(userID, bm)
 	}
-	bm.Add(uint(dateID))
+	// check if already sign-in
+	if ok = bm.Add(uint(dateID)); ok {
+		return fmt.Errorf("userID[%d] dateID[%d] already signed in", userID, dateID)
+	}
 
 	// dateLog
 	bm, ok = s.dateLogs.Get(dateID)
@@ -58,7 +65,11 @@ func (s *SignIn) Sign(userID UserID, dateID DateID) {
 		bm = structx.NewBitMap()
 		s.dateLogs.Set(dateID, bm)
 	}
-	bm.Add(uint(userID))
+	// check if already sign-in
+	if ok = bm.Add(uint(userID)); ok {
+		return fmt.Errorf("userID[%d] dateID[%d] already signed in", userID, dateID)
+	}
+	return nil
 }
 
 // UserCount: Get the number of days users have signed in

@@ -1,5 +1,7 @@
 package structx
 
+import "fmt"
+
 const bitSize = 64 // uint64 is 64 bits
 
 type BitMap struct {
@@ -90,25 +92,23 @@ func (bm *BitMap) Len() int {
 	return bm.len
 }
 
-type marshalBitMap struct {
-	Words []uint64
-	Len   int
-}
-
 // Marshal
 func (bm *BitMap) Marshal() ([]byte, error) {
-	return marshalJSON(marshalBitMap{bm.words, bm.len})
+	return marshalJSON(append(bm.words, uint64(bm.len)))
 }
 
 // Unmarshal
 func (bm *BitMap) Unmarshal(src []byte) error {
-	var b marshalBitMap
-	if err := unmarshalJSON(src, &b); err != nil {
+	if err := unmarshalJSON(src, &bm.words); err != nil {
 		return err
 	}
+	if len(bm.words) == 0 {
+		return fmt.Errorf("unmarshal bitmap error")
+	}
 
-	bm.words = b.Words
-	bm.len = b.Len
+	n := len(bm.words)
+	bm.len = int(bm.words[n-1])
+	bm.words = bm.words[:n-1]
 	return nil
 }
 

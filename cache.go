@@ -98,6 +98,11 @@ func (c *Cache[K, V]) MSet(values map[K]V, ttl ...time.Duration) {
 	c.m.MSet(items)
 }
 
+// Keys
+func (c *Cache[K, V]) Keys() []K {
+	return c.m.Keys()
+}
+
 // SetTTL
 func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Get(key)
@@ -131,22 +136,20 @@ func (c *Cache[K, V]) Len() int {
 
 // Range
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
-	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > c.now() {
-			return f(k, v.value)
+	for t := range c.m.IterBuffered() {
+		if f(t.Key, t.Val.value) {
+			break
 		}
-		return false
-	})
+	}
 }
 
 // RangeWithTTL
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
-	c.m.Range(func(k K, v *cacheItem[V]) bool {
-		if v.ttl > c.now() {
-			return f(k, v.value, v.ttl)
+	for t := range c.m.IterBuffered() {
+		if f(t.Key, t.Val.value, t.Val.ttl) {
+			break
 		}
-		return false
-	})
+	}
 }
 
 // Scheduled update current timestamp
