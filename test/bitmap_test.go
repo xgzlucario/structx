@@ -6,9 +6,11 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
+const bitSize = 100000000
+
 func getBitMap() *structx.BitMap {
 	bm := structx.NewBitMap()
-	for i := 0; i < 100000000; i++ {
+	for i := 0; i < bitSize; i++ {
 		bm.Add(uint(i))
 	}
 	return bm
