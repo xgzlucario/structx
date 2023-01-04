@@ -127,3 +127,24 @@ func (bm *BitMap) ToSlice() []uint {
 	}
 	return arr
 }
+
+// MaxBitCount: Count the number of consecutive 1, starting from the highest 1.
+func (bm *BitMap) MaxBitCount() int {
+	var count int
+	var flag bool
+
+	for i := len(bm.words) - 1; i >= 0; i-- {
+		v := bm.words[i]
+
+		for j := bitSize - 1; j >= 0; j-- {
+			if v&(1<<j) != 0 {
+				count++
+				flag = true
+
+			} else if flag {
+				return count
+			}
+		}
+	}
+	return count
+}
