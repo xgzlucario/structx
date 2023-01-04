@@ -46,18 +46,14 @@ func (bm *BitMap) Remove(num uint) bool {
 	return false
 }
 
-// Exist
-func (bm *BitMap) Exist(num uint) bool {
+// Contains
+func (bm *BitMap) Contains(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
 	return word < uint(len(bm.words)) && (bm.words[word]&(1<<bit)) != 0
 }
 
-// GetMin
-func (bm *BitMap) GetMin() int {
-	if bm.len == 0 {
-		return -1
-	}
-
+// Min
+func (bm *BitMap) Min() int {
 	for i, v := range bm.words {
 		if v == 0 {
 			continue
@@ -71,17 +67,18 @@ func (bm *BitMap) GetMin() int {
 	return -1
 }
 
-// GetMax
-func (bm *BitMap) GetMax() int {
-	if bm.len == 0 {
-		return -1
-	}
-
+// Max
+func (bm *BitMap) Max() int {
 	n := len(bm.words) - 1
-	word := bm.words[n]
-	for i := bitSize - 1; i >= 0; i-- {
-		if word&(1<<i) != 0 {
-			return bitSize*n + i
+	for i := n; i >= 0; i-- {
+		v := bm.words[i]
+		if v == 0 {
+			continue
+		}
+		for j := bitSize - 1; j >= 0; j-- {
+			if v&(1<<j) != 0 {
+				return int(bitSize*uint(i) + uint(j))
+			}
 		}
 	}
 	return -1

@@ -123,9 +123,8 @@ func (s *SignIn) UserRecentDate(userId uint) time.Time {
 	if !ok {
 		return time.Time{}
 	}
-	id := bm.GetMax()
 
-	return dateID(id).ToDate()
+	return dateID(bm.Max()).ToDate()
 }
 
 // UserContinuousCount: Count the number of consecutive days the user has signed in

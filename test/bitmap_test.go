@@ -23,10 +23,10 @@ func Benchmark_BitMapAdd(b *testing.B) {
 	}
 }
 
-func Benchmark_BitMapExist(b *testing.B) {
+func Benchmark_BitMapContains(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.Exist(uint(i))
+		bm.Contains(uint(i))
 	}
 }
 
@@ -40,14 +40,14 @@ func Benchmark_BitMapRemove(b *testing.B) {
 func Benchmark_BitMapGetMax(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.GetMax()
+		bm.Max()
 	}
 }
 
-func Benchmark_BitMapGetMin(b *testing.B) {
+func Benchmark_BitMapMin(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.GetMin()
+		bm.Min()
 	}
 }
 
