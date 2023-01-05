@@ -14,8 +14,12 @@ type BitMap struct {
 }
 
 // NewBitMap
-func NewBitMap() *BitMap {
-	return new(BitMap)
+func NewBitMap(nums ...uint) *BitMap {
+	bm := new(BitMap)
+	for _, num := range nums {
+		bm.Add(num)
+	}
+	return bm
 }
 
 // Add
@@ -58,34 +62,22 @@ func (bm *BitMap) Contains(num uint) bool {
 
 // Min
 func (bm *BitMap) Min() int {
-	for i, v := range bm.words {
-		if v == 0 {
-			continue
-		}
-		for j := uint(0); j < bitSize; j++ {
-			if v&(1<<j) != 0 {
-				return int(bitSize*uint(i) + j)
-			}
-		}
-	}
-	return -1
+	min := -1
+	bm.Range(func(u uint) bool {
+		min = int(u)
+		return true
+	})
+	return min
 }
 
 // Max
 func (bm *BitMap) Max() int {
-	n := len(bm.words) - 1
-	for i := n; i >= 0; i-- {
-		v := bm.words[i]
-		if v == 0 {
-			continue
-		}
-		for j := bitSize - 1; j >= 0; j-- {
-			if v&(1<<j) != 0 {
-				return int(bitSize*uint(i) + uint(j))
-			}
-		}
-	}
-	return -1
+	max := -1
+	bm.RevRange(func(u uint) bool {
+		max = int(u)
+		return true
+	})
+	return max
 }
 
 // Union
@@ -114,6 +106,26 @@ func (bm *BitMap) Intersect(target *BitMap) *BitMap {
 		return false
 	})
 	return min
+}
+
+// Difference
+func (bm *BitMap) Difference(target *BitMap) *BitMap {
+	newBm := NewBitMap()
+
+	bm.Range(func(u uint) bool {
+		if !target.Contains(u) {
+			newBm.Add(u)
+		}
+		return false
+	})
+	target.Range(func(u uint) bool {
+		if !bm.Contains(u) {
+			newBm.Add(u)
+		}
+		return false
+	})
+
+	return newBm
 }
 
 // Len
