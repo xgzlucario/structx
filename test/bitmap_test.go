@@ -37,7 +37,7 @@ func Benchmark_BitMapRemove(b *testing.B) {
 	}
 }
 
-func Benchmark_BitMapGetMax(b *testing.B) {
+func Benchmark_BitMapMax(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
 		bm.Max()

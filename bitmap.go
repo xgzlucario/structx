@@ -62,22 +62,34 @@ func (bm *BitMap) Contains(num uint) bool {
 
 // Min
 func (bm *BitMap) Min() int {
-	min := -1
-	bm.Range(func(u uint) bool {
-		min = int(u)
-		return true
-	})
-	return min
+	for i, v := range bm.words {
+		if v == 0 {
+			continue
+		}
+		for j := uint(0); j < bitSize; j++ {
+			if v&(1<<j) != 0 {
+				return int(bitSize*uint(i) + j)
+			}
+		}
+	}
+	return -1
 }
 
 // Max
 func (bm *BitMap) Max() int {
-	max := -1
-	bm.RevRange(func(u uint) bool {
-		max = int(u)
-		return true
-	})
-	return max
+	n := len(bm.words) - 1
+	for i := n; i >= 0; i-- {
+		v := bm.words[i]
+		if v == 0 {
+			continue
+		}
+		for j := bitSize - 1; j >= 0; j-- {
+			if v&(1<<j) != 0 {
+				return int(bitSize*uint(i) + uint(j))
+			}
+		}
+	}
+	return -1
 }
 
 // Union
