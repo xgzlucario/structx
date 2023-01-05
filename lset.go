@@ -127,9 +127,9 @@ func (s *LSet[T]) Equal(target *LSet[T]) bool {
 }
 
 // Union: Return the union of two sets
-func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
-	min, max := this.compareTwoLSet(t)
-	// should copy max lset
+func (s *LSet[T]) Union(t *LSet[T]) *LSet[T] {
+	min, max := s.compareLength(t)
+	// should copy max object
 	max = max.Copy()
 
 	for _, k := range min.array {
@@ -139,9 +139,9 @@ func (this *LSet[T]) Union(t *LSet[T]) *LSet[T] {
 }
 
 // Intersect
-func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
-	min, max := this.compareTwoLSet(t)
-	// should copy min lset
+func (s *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
+	min, max := s.compareLength(t)
+	// should copy min object
 	min = min.Copy()
 
 	for _, k := range min.array {
@@ -153,30 +153,30 @@ func (this *LSet[T]) Intersect(t *LSet[T]) *LSet[T] {
 }
 
 // Difference
-func (this *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
-	newSet := NewLSet[T]()
+func (s *LSet[T]) Difference(t *LSet[T]) *LSet[T] {
+	newS := NewLSet[T]()
 
-	for _, k := range this.array {
-		if !t.Exist(k) {
-			newSet.add(k)
+	for _, key := range s.array {
+		if !t.Exist(key) {
+			newS.add(key)
 		}
 	}
-	for _, k := range t.array {
-		if !this.Exist(k) {
-			newSet.add(k)
+	for _, key := range t.array {
+		if !s.Exist(key) {
+			newS.add(key)
 		}
 	}
-	return newSet
+	return newS
 }
 
 // IsSubSet
-func (this *LSet[T]) IsSubSet(t *LSet[T]) bool {
-	if t.Len() > this.Len() {
+func (s *LSet[T]) IsSubSet(t *LSet[T]) bool {
+	if t.Len() > s.Len() {
 		return false
 	}
 
 	for _, v := range t.array {
-		if !this.Exist(v) {
+		if !s.Exist(v) {
 			return false
 		}
 	}
@@ -184,30 +184,30 @@ func (this *LSet[T]) IsSubSet(t *LSet[T]) bool {
 }
 
 // LPop: Pop a elem from left
-func (this *LSet[T]) LPop() T {
-	v := this.List.LPop()
-	if this.enable() {
-		delete(this.m, v)
+func (s *LSet[T]) LPop() T {
+	v := s.List.LPop()
+	if s.enable() {
+		delete(s.m, v)
 	}
 	return v
 }
 
 // RPop: Pop a elem from right
-func (this *LSet[T]) RPop() T {
-	v := this.List.RPop()
-	if this.enable() {
-		delete(this.m, v)
+func (s *LSet[T]) RPop() T {
+	v := s.List.RPop()
+	if s.enable() {
+		delete(s.m, v)
 	}
 	return v
 }
 
 // RandomPop: Pop a random elem
-func (this *LSet[T]) RandomPop() T {
+func (s *LSet[T]) RandomPop() T {
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(this.Len())
+	index := rand.Intn(s.Len())
 
-	this.Bottom(index)
-	return this.RPop()
+	s.Bottom(index)
+	return s.RPop()
 }
 
 // Unmarshal: Unmarshal from JSON
@@ -220,7 +220,7 @@ func (s *LSet[T]) Unmarshal(src []byte) error {
 }
 
 // Compare two lset length and return (*min, *max)
-func (s1 *LSet[T]) compareTwoLSet(s2 *LSet[T]) (*LSet[T], *LSet[T]) {
+func (s1 *LSet[T]) compareLength(s2 *LSet[T]) (*LSet[T], *LSet[T]) {
 	if s1.Len() < s2.Len() {
 		return s1, s2
 	}

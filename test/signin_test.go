@@ -56,12 +56,6 @@ func BenchmarkUserRecentDate(b *testing.B) {
 
 func BenchmarkUserDates(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		defaultSign.UserDates(1)
-	}
-}
-
-func BenchmarkUserContinuousCount(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		defaultSign.UserContinuousCount(1)
+		defaultSign.UserSignDates(1)
 	}
 }

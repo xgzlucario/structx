@@ -1,12 +1,16 @@
 package structx
 
-import "fmt"
+import (
+	"fmt"
 
-const bitSize = 64 // uint64 is 64 bits
+	"golang.org/x/exp/slices"
+)
+
+const bitSize = 64 // uint64 is 64 bit
 
 type BitMap struct {
 	words []uint64
-	len   int
+	len   uint64
 }
 
 // NewBitMap
@@ -84,14 +88,83 @@ func (bm *BitMap) Max() int {
 	return -1
 }
 
+// Union
+func (bm *BitMap) Union(target *BitMap) *BitMap {
+	min, max := bm.compareLength(target)
+	// should copy max object
+	max = max.Copy()
+
+	min.Range(func(v uint) bool {
+		max.Add(v)
+		return false
+	})
+	return max
+}
+
+// Intersect
+func (bm *BitMap) Intersect(target *BitMap) *BitMap {
+	min, max := bm.compareLength(target)
+	// should copy min object
+	min = min.Copy()
+
+	min.Range(func(v uint) bool {
+		if !max.Contains(v) {
+			min.Remove(v)
+		}
+		return false
+	})
+	return min
+}
+
 // Len
-func (bm *BitMap) Len() int {
+func (bm *BitMap) Len() uint64 {
 	return bm.len
+}
+
+// Copy
+func (bm *BitMap) Copy() *BitMap {
+	return &BitMap{
+		words: slices.Clone(bm.words),
+		len:   bm.len,
+	}
+}
+
+// Range: Not recommended for poor performance
+func (bm *BitMap) Range(f func(uint) bool) {
+	for i, v := range bm.words {
+		if v == 0 {
+			continue
+		}
+		for j := uint(0); j < bitSize; j++ {
+			if v&(1<<j) != 0 {
+				if f(bitSize*uint(i) + j) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// RevRange: Not recommended for poor performance
+func (bm *BitMap) RevRange(f func(uint) bool) {
+	for i := len(bm.words) - 1; i >= 0; i-- {
+		v := bm.words[i]
+		if v == 0 {
+			continue
+		}
+		for j := bitSize - 1; j >= 0; j-- {
+			if v&(1<<j) != 0 {
+				if f(bitSize*uint(i) + uint(j)) {
+					return
+				}
+			}
+		}
+	}
 }
 
 // Marshal
 func (bm *BitMap) Marshal() ([]byte, error) {
-	return marshalJSON(append(bm.words, uint64(bm.len)))
+	return marshalJSON(append(bm.words, bm.len))
 }
 
 // Unmarshal
@@ -104,44 +177,15 @@ func (bm *BitMap) Unmarshal(src []byte) error {
 	}
 
 	n := len(bm.words)
-	bm.len = int(bm.words[n-1])
+	bm.len = bm.words[n-1]
 	bm.words = bm.words[:n-1]
 	return nil
 }
 
-// ToSlice: Not recommended for poor performance
-func (bm *BitMap) ToSlice() []uint {
-	arr := make([]uint, 0, bm.len)
-	for i, v := range bm.words {
-		if v == 0 {
-			continue
-		}
-		for j := uint(0); j < bitSize; j++ {
-			if v&(1<<j) != 0 {
-				arr = append(arr, bitSize*uint(i)+j)
-			}
-		}
+// Compare two bitmap length and return (*min, *max)
+func (bm1 *BitMap) compareLength(bm2 *BitMap) (*BitMap, *BitMap) {
+	if bm1.Len() < bm2.Len() {
+		return bm1, bm2
 	}
-	return arr
-}
-
-// MaxBitCount: Count the number of consecutive 1, starting from the highest 1.
-func (bm *BitMap) MaxBitCount() int {
-	var count int
-	var flag bool
-
-	for i := len(bm.words) - 1; i >= 0; i-- {
-		v := bm.words[i]
-
-		for j := bitSize - 1; j >= 0; j-- {
-			if v&(1<<j) != 0 {
-				count++
-				flag = true
-
-			} else if flag {
-				return count
-			}
-		}
-	}
-	return count
+	return bm2, bm1
 }

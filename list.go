@@ -1,8 +1,6 @@
 package structx
 
 import (
-	"fmt"
-
 	"golang.org/x/exp/slices"
 )
 
@@ -12,7 +10,9 @@ type List[T comparable] struct {
 
 // NewList: return new List
 func NewList[T comparable](values ...T) *List[T] {
-	return &List[T]{array: values}
+	return &List[T]{
+		array: slices.Clone(values),
+	}
 }
 
 // LPush
@@ -54,14 +54,14 @@ func (ls *List[T]) RPop() T {
 }
 
 // RemoveElem
-func (ls *List[T]) RemoveElem(elem T) error {
+func (ls *List[T]) RemoveElem(elem T) bool {
 	for i, v := range ls.array {
 		if v == elem {
 			ls.array = slices.Delete(ls.array, i, i+1)
-			return nil
+			return true
 		}
 	}
-	return fmt.Errorf("elem[%v] not exist", elem)
+	return false
 }
 
 // Delete

@@ -81,21 +81,21 @@ func (s *SignIn) Insert(userId uint, date time.Time) error {
 
 // UserCount: Get the number of days users have signed in
 // 用户签到总天数
-func (s *SignIn) UserCount(userId uint) int {
+func (s *SignIn) UserCount(userId uint) (uint64, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	bm, ok := s.userMap.Get(userID(userId))
 	if !ok {
-		return -1
+		return 0, errors.New("userID not exist")
 	}
 
-	return bm.Len()
+	return bm.Len(), nil
 }
 
-// UserDates: Get user sign-in date slices
+// UserSignDates: Get user sign-in dates order by DESC, you can set limit of return numbers.
 // 用户签到日期列表
-func (s *SignIn) UserDates(userId uint) []time.Time {
+func (s *SignIn) UserSignDates(userId uint, limits ...int) []time.Time {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -104,11 +104,21 @@ func (s *SignIn) UserDates(userId uint) []time.Time {
 		return nil
 	}
 
-	// parse timeSlice
-	times := make([]time.Time, 0, bm.Len())
-	for _, id := range bm.ToSlice() {
-		times = append(times, dateID(id).ToDate())
+	// limit
+	var limit = bm.Len()
+	if len(limits) > 0 {
+		limit = uint64(limits[0])
 	}
+
+	// parse timeSlice
+	times := make([]time.Time, 0, limit)
+	var count uint64
+
+	bm.RevRange(func(id uint) bool {
+		times = append(times, dateID(id).ToDate())
+		count++
+		return count >= limit
+	})
 
 	return times
 }
@@ -127,32 +137,19 @@ func (s *SignIn) UserRecentDate(userId uint) time.Time {
 	return dateID(bm.Max()).ToDate()
 }
 
-// UserContinuousCount: Count the number of consecutive days the user has signed in
-// 用户连续签到统计
-func (s *SignIn) UserContinuousCount(userId uint) int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	bm, ok := s.userMap.Get(userID(userId))
-	if !ok {
-		return -1
-	}
-	return bm.MaxBitCount()
-}
-
 // DateCount: Get the total number of sign-in for the day
 // 当日签到总量统计
-func (s *SignIn) DateCount(date time.Time) int {
+func (s *SignIn) DateCount(date time.Time) (uint64, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	id := s.parseDateID(date)
 	bm, ok := s.dateMap.Get(id)
 	if !ok {
-		return -1
+		return 0, errors.New("dateID not exist")
 	}
 
-	return bm.Len()
+	return bm.Len(), nil
 }
 
 // parseDateID: Return days to ZeroTime
