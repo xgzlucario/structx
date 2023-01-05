@@ -25,20 +25,10 @@ func NewSyncMapStringer[K cmap.Stringer, V any]() *SyncMap[K, V] {
 	}
 }
 
-// Range
-func (m *SyncMap[K, V]) Range(f func(key K, value V) bool) {
-	for t := range m.IterBuffered() {
-		if f(t.Key, t.Val) {
-			break
-		}
-	}
-}
-
 // Print
 func (m *SyncMap[K, V]) Print() {
-	m.Range(func(k K, v V) bool {
-		fmt.Printf("%+v -> %+v\n", k, v)
-		return false
-	})
+	for t := range m.IterBuffered() {
+		fmt.Printf("%+v -> %+v\n", t.Key, t.Val)
+	}
 	fmt.Println()
 }

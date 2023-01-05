@@ -8,7 +8,6 @@ import (
 	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
-// Modifiable configuration
 var (
 	// duration of expired keys evictions
 	GCDuration = time.Minute
@@ -20,7 +19,6 @@ var (
 	DefaultTTL = time.Minute * 10
 )
 
-// Non-modifiable configuration
 const (
 	NoTTL int64 = math.MaxInt64
 )
@@ -51,7 +49,6 @@ func NewCache[V any]() *Cache[string, V] {
 		m:    NewSyncMap[*cacheItem[V]](),
 		_now: time.Now().UnixNano(),
 	}
-
 	go cache.eviction()
 	go cache.ticker()
 
@@ -119,8 +116,8 @@ func (c *Cache[K, V]) OnExpired(f cmap.RemoveCb[K, *cacheItem[V]]) *Cache[K, V] 
 	return c
 }
 
-// Delete
-func (c *Cache[K, V]) Delete(key K) {
+// Remove
+func (c *Cache[K, V]) Remove(key K) {
 	c.m.Remove(key)
 }
 
@@ -165,18 +162,17 @@ func (c *Cache[K, V]) eviction() {
 	for c != nil {
 		time.Sleep(GCDuration)
 
-		c.m.Range(func(key K, item *cacheItem[V]) bool {
+		for t := range c.m.IterBuffered() {
 			// clear expired keys
-			if item.ttl < c.now() {
+			if t.Val.ttl < c.now() {
 				// onExpired
 				if c.onExpired != nil {
-					c.m.RemoveCb(key, c.onExpired)
+					c.m.RemoveCb(t.Key, c.onExpired)
 				} else {
-					c.m.Remove(key)
+					c.m.Remove(t.Key)
 				}
 			}
-			return false
-		})
+		}
 	}
 }
 

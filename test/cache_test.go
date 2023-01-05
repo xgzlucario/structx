@@ -44,10 +44,10 @@ func BenchmarkCacheGet(b *testing.B) {
 	}
 }
 
-func BenchmarkCacheDelete(b *testing.B) {
+func BenchmarkCacheRemove(b *testing.B) {
 	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Delete(strconv.Itoa(i))
+		s.Remove(strconv.Itoa(i))
 	}
 }
 
