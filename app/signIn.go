@@ -87,7 +87,7 @@ func (s *SignIn) UserCount(userId uint) (uint64, error) {
 
 	bm, ok := s.userMap.Get(userID(userId))
 	if !ok {
-		return 0, errors.New("userID not exist")
+		return 0, errors.New("user not exist")
 	}
 
 	return bm.Len(), nil
@@ -117,7 +117,7 @@ func (s *SignIn) UserSignDates(userId uint, limits ...int) []time.Time {
 	bm.RevRange(func(id uint) bool {
 		times = append(times, dateID(id).ToDate())
 		count++
-		return count >= limit
+		return count > limit
 	})
 
 	return times
@@ -146,7 +146,7 @@ func (s *SignIn) DateCount(date time.Time) (uint64, error) {
 	id := s.parseDateID(date)
 	bm, ok := s.dateMap.Get(id)
 	if !ok {
-		return 0, errors.New("dateID not exist")
+		return 0, errors.New("date not exist")
 	}
 
 	return bm.Len(), nil

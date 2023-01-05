@@ -41,7 +41,7 @@ func (bm *BitMap) Remove(num uint) bool {
 		return false
 	}
 
-	// is exist
+	// if exist
 	if bm.words[word]&(1<<bit) != 0 {
 		bm.words[word] &^= 1 << bit
 		bm.len--
