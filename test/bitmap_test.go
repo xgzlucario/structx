@@ -51,17 +51,25 @@ func Benchmark_BitMapMin(b *testing.B) {
 	}
 }
 
+func Benchmark_BitMapUnion(b *testing.B) {
+	bm := structx.NewBitMap().AddRange(0, 100)
+	bm1 := structx.NewBitMap().AddRange(50, 150)
+	for i := 0; i < b.N; i++ {
+		bm.Union(bm1)
+	}
+}
+
+func Benchmark_BitMapUnionInplace(b *testing.B) {
+	bm := structx.NewBitMap().AddRange(0, 100)
+	bm1 := structx.NewBitMap().AddRange(50, 150)
+	for i := 0; i < b.N; i++ {
+		bm.Union(bm1, true)
+	}
+}
+
 func Benchmark_BitMapMarshal(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
 		bm.Marshal()
-	}
-}
-
-func Benchmark_BitMapUnmarshal(b *testing.B) {
-	bm := getBitMap()
-	buf, _ := bm.Marshal()
-	for i := 0; i < b.N; i++ {
-		bm.Unmarshal(buf)
 	}
 }

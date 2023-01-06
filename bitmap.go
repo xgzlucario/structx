@@ -25,7 +25,7 @@ func NewBitMap(nums ...uint) *BitMap {
 // Add
 func (bm *BitMap) Add(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
-	for word >= uint(len(bm.words)) {
+	for word >= bm.wordLen() {
 		bm.words = append(bm.words, 0)
 	}
 
@@ -38,10 +38,18 @@ func (bm *BitMap) Add(num uint) bool {
 	return false
 }
 
+// AddRange
+func (bm *BitMap) AddRange(start uint, end uint) *BitMap {
+	for i := start; i < end; i++ {
+		bm.Add(i)
+	}
+	return bm
+}
+
 // Remove
 func (bm *BitMap) Remove(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
-	if word >= uint(len(bm.words)) {
+	if word >= bm.wordLen() {
 		return false
 	}
 
@@ -57,7 +65,7 @@ func (bm *BitMap) Remove(num uint) bool {
 // Contains
 func (bm *BitMap) Contains(num uint) bool {
 	word, bit := num/bitSize, uint(num%bitSize)
-	return word < uint(len(bm.words)) && (bm.words[word]&(1<<bit)) != 0
+	return word < bm.wordLen() && (bm.words[word]&(1<<bit)) != 0
 }
 
 // Min
@@ -93,56 +101,64 @@ func (bm *BitMap) Max() int {
 }
 
 // Union
-func (bm *BitMap) Union(target *BitMap) *BitMap {
-	min, max := bm.compareLength(target)
-	// should copy max object
-	max = max.Copy()
+func (bm *BitMap) Union(target *BitMap, inplace ...bool) *BitMap {
+	// modify inplace
+	if len(inplace) > 0 && inplace[0] {
+		// append
+		for target.wordLen() > bm.wordLen() {
+			bm.words = append(bm.words, 0)
+		}
 
-	min.Range(func(v uint) bool {
-		max.Add(v)
-		return false
-	})
-	return max
+		for i, v := range target.words {
+			bm.words[i] |= v
+		}
+		return nil
+
+	} else {
+		min, max := bm.compareLength(target)
+		// copy max object
+		max = max.Copy()
+
+		for i, v := range min.words {
+			max.words[i] |= v
+		}
+
+		return max
+	}
 }
 
 // Intersect
 func (bm *BitMap) Intersect(target *BitMap) *BitMap {
 	min, max := bm.compareLength(target)
-	// should copy min object
+	// copy min object
 	min = min.Copy()
 
-	min.Range(func(v uint) bool {
-		if !max.Contains(v) {
-			min.Remove(v)
-		}
-		return false
-	})
+	for i, v := range max.words {
+		min.words[i] &= v
+	}
 	return min
 }
 
 // Difference
 func (bm *BitMap) Difference(target *BitMap) *BitMap {
-	newBm := NewBitMap()
+	min, max := bm.compareLength(target)
+	// copy max object
+	max = max.Copy()
 
-	bm.Range(func(u uint) bool {
-		if !target.Contains(u) {
-			newBm.Add(u)
-		}
-		return false
-	})
-	target.Range(func(u uint) bool {
-		if !bm.Contains(u) {
-			newBm.Add(u)
-		}
-		return false
-	})
-
-	return newBm
+	for i := range max.words {
+		max.words[i] ^= min.words[i]
+	}
+	return max
 }
 
 // Len
 func (bm *BitMap) Len() uint64 {
 	return bm.len
+}
+
+// wordLen
+func (bm *BitMap) wordLen() uint {
+	return uint(len(bm.words))
 }
 
 // Copy
@@ -208,7 +224,7 @@ func (bm *BitMap) Unmarshal(src []byte) error {
 
 // Compare two bitmap length and return (*min, *max)
 func (bm1 *BitMap) compareLength(bm2 *BitMap) (*BitMap, *BitMap) {
-	if bm1.Len() < bm2.Len() {
+	if bm1.wordLen() < bm2.wordLen() {
 		return bm1, bm2
 	}
 	return bm2, bm1
