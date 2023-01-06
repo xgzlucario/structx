@@ -12,9 +12,9 @@ var defaultSign = getSignIn()
 func getSignIn() *app.SignIn {
 	s := app.NewSignIn()
 	now := time.Now()
-	for i := time.Duration(0); i < bitSize; i++ {
-		now = now.Add(time.Hour * 24)
+	for i := 0; i < bitSize; i++ {
 		s.Insert(1, now)
+		now = now.Add(time.Hour * 24)
 	}
 	return s
 }
@@ -31,8 +31,8 @@ func BenchmarkSignIn2(b *testing.B) {
 	s := app.NewSignIn()
 	now := time.Now()
 	for i := 0; i < b.N; i++ {
-		now = now.Add(time.Hour * 24)
 		s.Insert(1, now)
+		now = now.Add(time.Hour * 24)
 	}
 }
 
@@ -56,6 +56,6 @@ func BenchmarkUserRecentDate(b *testing.B) {
 
 func BenchmarkUserDates(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		defaultSign.UserSignDates(1)
+		defaultSign.UserSignDates(1, 100)
 	}
 }

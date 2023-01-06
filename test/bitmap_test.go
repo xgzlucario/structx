@@ -52,48 +52,48 @@ func BenchmarkBmMin(b *testing.B) {
 }
 
 func BenchmarkBmUnion(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Union(bm1)
 	}
 }
 
 func BenchmarkBmUnionInplace(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Union(bm1, true)
 	}
 }
 
 func BenchmarkBmIntersect(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Intersect(bm1)
 	}
 }
 
 func BenchmarkBmIntersectInplace(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Intersect(bm1, true)
 	}
 }
 
 func BenchmarkBmDifference(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Difference(bm1)
 	}
 }
 
 func BenchmarkBmDifferenceInplace(b *testing.B) {
-	bm := structx.NewBitMap().AddRange(0, 10000)
-	bm1 := structx.NewBitMap().AddRange(5000, 15000)
+	bm := structx.NewBitMap().AddRange(0, 1000)
+	bm1 := structx.NewBitMap().AddRange(500, 1500)
 	for i := 0; i < b.N; i++ {
 		bm.Difference(bm1, true)
 	}

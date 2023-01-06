@@ -7,7 +7,9 @@ import (
 	"github.com/xgzlucario/structx"
 )
 
-const cacheSize = 99999
+const cacheSize = 100000
+
+var defaultCache = getCache()
 
 func getCache() *structx.Cache[string, int] {
 	s := structx.NewCache[int]()
@@ -38,9 +40,8 @@ func BenchmarkCacheMSet(b *testing.B) {
 }
 
 func BenchmarkCacheGet(b *testing.B) {
-	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Get(strconv.Itoa(i))
+		defaultCache.Get(strconv.Itoa(i))
 	}
 }
 
@@ -52,9 +53,8 @@ func BenchmarkCacheRemove(b *testing.B) {
 }
 
 func BenchmarkCacheRange(b *testing.B) {
-	s := getCache()
 	for i := 0; i < b.N; i++ {
-		s.Range(func(key string, value int) bool {
+		defaultCache.Range(func(key string, value int) bool {
 			return false
 		})
 	}

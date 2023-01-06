@@ -6,7 +6,7 @@ require (
 	github.com/bytedance/sonic v1.6.1
 	github.com/liyiheng/zset v0.0.0-20211012035528-6679b37ff27a
 	github.com/orcaman/concurrent-map/v2 v2.0.1
-	golang.org/x/exp v0.0.0-20230105000112-eab7a2c85304
+	golang.org/x/exp v0.0.0-20230105202349-8879d0199aa3
 )
 
 require (

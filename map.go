@@ -3,7 +3,7 @@ package structx
 import (
 	"fmt"
 
-	"golang.org/x/exp/slices"
+	"golang.org/x/exp/maps"
 )
 
 type Map[K comparable, V any] map[K]V
@@ -49,13 +49,24 @@ func (m Map[K, V]) Range(f func(K, V) bool) {
 	}
 }
 
+// Clear
+func (m Map[K, V]) Clear() {
+	maps.Clear(m)
+}
+
+// Copy
+func (m Map[K, V]) Copy() Map[K, V] {
+	return maps.Clone(m)
+}
+
+// Keys
+func (m Map[K, V]) Keys() []K {
+	return maps.Keys(m)
+}
+
 // Values
 func (m Map[K, V]) Values() []V {
-	values := make([]V, 0, m.Len())
-	for _, v := range m {
-		values = append(values, v)
-	}
-	return slices.Clip(values)
+	return maps.Values(m)
 }
 
 // Len
