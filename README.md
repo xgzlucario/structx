@@ -7,11 +7,56 @@ Currently, structx provides the following types of data structures to support ge
 - `List`
 - `Map`、`SyncMap`
 - `LSet (ListSet)`
-- `ZSet (SortedSet)`
+- `Skiplist`、`ZSet (SortedSet)`
 - `Pool`
-- `Skiplist`
 - `Cache`
 - `BitMap`
+
+### BitMap
+
+`bitmap` implement backed by a slice of []uint64, and is `nice wrappered`.
+
+**usage**
+
+```go
+bm := structx.NewBitMap(1,2,3)
+bm.Add(4) // [1,2,3,4]
+bm.Add(1) // [1,2,3.4]
+bm.Remove(4) // [1,2,3]
+bm.Contains(2) // true
+
+bm.Min() // 1
+bm.Max() // 3
+bm.Len() // 3
+
+bm1 := structx.NewBitMap(3,4,5)
+bm.Union(bm1, true) // [1,2,3,4,5] OR operation and set inplaced
+```
+
+**Benchmark**
+
+Benchmarks below were run on a pre-allocated bitmap of **100,000,000** elements.
+
+```
+goos: linux
+goarch: amd64
+pkg: github.com/xgzlucario/structx/test
+cpu: AMD Ryzen 7 5800H with Radeon Graphics         
+BenchmarkBmAdd-16                  	787935627	         1.515 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmContains-16             	1000000000	         0.3916 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmRemove-16               	1000000000	         0.7613 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmMax-16                  	1000000000	         1.169 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmMin-16                  	1000000000	         0.8804 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmUnion-16                	 2249113	       512.9 ns/op	    2080 B/op	       2 allocs/op
+BenchmarkBmUnionInplace-16         	 9901345	       118.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmIntersect-16            	 3246958	       370.4 ns/op	    1312 B/op	       2 allocs/op
+BenchmarkBmIntersectInplace-16     	11000289	       110.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmDifference-16           	 2107741	       606.5 ns/op	    2080 B/op	       2 allocs/op
+BenchmarkBmDifferenceInplace-16    	 9769774	       121.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBmMarshal-16              	      66	  16559485 ns/op	39497262 B/op	       7 allocs/op
+PASS
+ok  	github.com/xgzlucario/structx/test	32.252s
+```
 
 ### List
 
@@ -45,23 +90,20 @@ ls.Sort(func(i, j int) bool {
 ```go
 s := structx.NewLSet(1,2,3,4,1) // [1,2,3,4]
 
-s.Remove(3) // [1,2,4]
-s.Add(1) // [1,2,4]
 s.Add(5) // [1,2,4,5]
+s.Remove(3) // [1,2,4]
 
-// shift
 s.Reverse() // [5,4,2,1]
 s.Top(2) // [2,5,4,1]
 s.Rpop() // [5,4,1]
 
-s.Range(func(k int) bool {
-    // do something...
-})
-newS := structx.NewLSet(1,2,3) // [1,2,3]
+s.Range(func(k int) bool {...})
 
-union := s.Union(newS) // [0,1,2,3)
-intersect := s.Intersect(newS) // [1,2]
-diff := s.Difference(newS) // [0,3]
+s1 := structx.NewLSet(1,2,3) // [1,2,3]
+
+union := s.Union(s1) // [0,1,2,3]
+intersect := s.Intersect(s1) // [1,2]
+diff := s.Difference(s1) // [0,3]
 ```
 
 #### **Benchmark**
