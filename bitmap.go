@@ -128,27 +128,70 @@ func (bm *BitMap) Union(target *BitMap, inplace ...bool) *BitMap {
 }
 
 // Intersect
-func (bm *BitMap) Intersect(target *BitMap) *BitMap {
-	min, max := bm.compareLength(target)
-	// copy min object
-	min = min.Copy()
+func (bm *BitMap) Intersect(target *BitMap, inplace ...bool) *BitMap {
+	// modify inplace
+	if len(inplace) > 0 && inplace[0] {
+		// bm is min
+		if bm.wordLen() < target.wordLen() {
+			for i := range bm.words {
+				bm.words[i] &= target.words[i]
+			}
 
-	for i, v := range max.words {
-		min.words[i] &= v
+		} else {
+			for i, v := range target.words {
+				bm.words[i] &= v
+			}
+			// set 0
+			for i := target.wordLen(); i < bm.wordLen(); i++ {
+				bm.words[i] &= 0x00
+			}
+		}
+		return nil
+
+	} else {
+		min, max := bm.compareLength(target)
+		// copy min object
+		min = min.Copy()
+
+		for i, v := range max.words {
+			if i >= int(min.wordLen()) {
+				break
+			}
+			min.words[i] &= v
+		}
+		return min
 	}
-	return min
 }
 
 // Difference
-func (bm *BitMap) Difference(target *BitMap) *BitMap {
-	min, max := bm.compareLength(target)
-	// copy max object
-	max = max.Copy()
+func (bm *BitMap) Difference(target *BitMap, inplace ...bool) *BitMap {
+	// modify inplace
+	if len(inplace) > 0 && inplace[0] {
+		// append
+		for bm.wordLen() < target.wordLen() {
+			bm.words = append(bm.words, 0)
+		}
 
-	for i := range max.words {
-		max.words[i] ^= min.words[i]
+		for i, v := range target.words {
+			bm.words[i] ^= v
+		}
+		return nil
+
+	} else {
+		min, max := bm.compareLength(target)
+		// copy max object
+		max = max.Copy()
+
+		// append
+		for min.wordLen() < max.wordLen() {
+			min.words = append(min.words, 0)
+		}
+
+		for i := range max.words {
+			max.words[i] ^= min.words[i]
+		}
+		return max
 	}
-	return max
 }
 
 // Len
