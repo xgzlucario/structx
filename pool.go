@@ -4,75 +4,81 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+
+	"github.com/sourcegraph/conc"
 )
 
-type Pool[T any] struct {
-	sem  chan struct{} // limit goroutine
-	work chan poolTask[T]
-	len  *int32
-	wg   sync.WaitGroup
+// Pool
+type Pool struct {
+	handle   conc.WaitGroup
+	limiter  limiter
+	tasks    chan func()
+	initOnce sync.Once
+	len      *int32
 }
 
-type poolTask[T any] struct {
-	work   func(...T)
-	params []T
+// NewPool
+func NewPool() *Pool {
+	return &Pool{}
 }
 
-// NewPool: Return new pool
-func NewPool[T any](size ...int) *Pool[T] {
-	// default
-	num := runtime.NumCPU()
-	if len(size) > 0 {
-		num = size[0]
-	}
-	return &Pool[T]{
-		work: make(chan poolTask[T]),
-		sem:  make(chan struct{}, num),
-		len:  new(int32),
-	}
-}
+// Go submits a task to be run in the pool.
+func (p *Pool) Go(f func()) {
+	p.init()
 
-// NewTask: Submit New Task
-func (p *Pool[T]) NewTask(task func(...T), params ...T) {
-	p.wg.Add(1)
-	t := poolTask[T]{
-		work:   task,
-		params: params,
-	}
 	select {
-	case p.work <- t:
+	case p.limiter <- struct{}{}:
+		p.handle.Go(p.worker)
+		p.tasks <- f
 		atomic.AddInt32(p.len, 1)
 
-	case p.sem <- struct{}{}:
-		go p.worker(t)
+	case p.tasks <- f:
 		atomic.AddInt32(p.len, 1)
-	}
-}
-
-// Do Task Backend
-func (p *Pool[T]) worker(t poolTask[T]) {
-	defer func() { <-p.sem }()
-	var ok = true
-	for ok {
-		t.work(t.params...)
-		p.wg.Done()
-		atomic.AddInt32(p.len, -1)
-		t, ok = <-p.work
 	}
 }
 
 // Wait
-func (p *Pool[T]) Wait() {
-	p.wg.Wait()
+func (p *Pool) Wait() {
+	p.init()
+
+	close(p.tasks)
+	p.handle.Wait()
 }
 
-// Len
-func (p *Pool[T]) Len() int32 {
-	return atomic.LoadInt32(p.len)
+// MaxGoroutines
+func (p *Pool) MaxGoroutines() int {
+	return cap(p.limiter)
 }
 
-// Close
-func (p *Pool[T]) Close() {
-	close(p.work)
-	close(p.sem)
+// WithMaxGoroutines
+func (p *Pool) WithMaxGoroutines(n int) *Pool {
+	if n < 1 {
+		panic("max goroutines in a pool must be greater than zero")
+	}
+	p.limiter = make(limiter, n)
+	return p
 }
+
+// init
+func (p *Pool) init() {
+	p.initOnce.Do(func() {
+		// Do not override the limiter if set by WithMaxGoroutines
+		if p.limiter == nil {
+			p.limiter = make(limiter, runtime.GOMAXPROCS(0))
+		}
+
+		p.len = new(int32)
+		p.tasks = make(chan func())
+	})
+}
+
+func (p *Pool) worker() {
+	defer func() { <-p.limiter }()
+
+	for f := range p.tasks {
+		f()
+		atomic.AddInt32(p.len, -1)
+	}
+}
+
+type limiter chan struct{}

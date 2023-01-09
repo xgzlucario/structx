@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/liyiheng/zset"
+	"github.com/sourcegraph/conc/pool"
 	"github.com/xgzlucario/structx"
 )
 
@@ -83,4 +84,20 @@ func Benchmark_ZSetRank2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		s.GetDataByRank(3899, true)
 	}
+}
+
+func BenchmarkPool1(b *testing.B) {
+	p := structx.NewPool().WithMaxGoroutines(100)
+	for i := 0; i < b.N; i++ {
+		p.Go(func() {})
+	}
+	p.Wait()
+}
+
+func BenchmarkPool2(b *testing.B) {
+	p := pool.New().WithMaxGoroutines(100)
+	for i := 0; i < b.N; i++ {
+		p.Go(func() {})
+	}
+	p.Wait()
 }
