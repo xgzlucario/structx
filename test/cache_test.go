@@ -59,3 +59,17 @@ func BenchmarkCacheRange(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkCacheMarshal(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		defaultCache.MarshalJSON()
+	}
+}
+
+func BenchmarkCacheUnmarshal(b *testing.B) {
+	s := structx.NewCache[int]()
+	src, _ := defaultCache.MarshalJSON()
+	for i := 0; i < b.N; i++ {
+		s.UnmarshalJSON(src)
+	}
+}

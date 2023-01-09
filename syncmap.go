@@ -32,3 +32,18 @@ func (m *SyncMap[K, V]) Print() {
 	}
 	fmt.Println()
 }
+
+// Marshal
+func (m *SyncMap[K, V]) MarshalJSON() ([]byte, error) {
+	return marshalJSON(m.Items())
+}
+
+// Unmarshal
+func (m *SyncMap[K, V]) UnmarshalJSON(src []byte) error {
+	var tmp map[K]V
+	if err := unmarshalJSON(src, &tmp); err != nil {
+		return err
+	}
+	m.MSet(tmp)
+	return nil
+}

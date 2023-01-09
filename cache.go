@@ -24,8 +24,8 @@ const (
 )
 
 type cacheItem[V any] struct {
-	value V
-	ttl   int64 // expiredTime
+	Value V
+	Ttl   int64 // expiredTime
 }
 
 type Cache[K string, V any] struct {
@@ -60,8 +60,8 @@ func (c *Cache[K, V]) Get(key K) (v V, ok bool) {
 	item, ok := c.m.Get(key)
 	if ok {
 		// check expired
-		if item.ttl > c.now() {
-			return item.value, true
+		if item.Ttl > c.now() {
+			return item.Value, true
 		}
 	}
 	return
@@ -70,11 +70,11 @@ func (c *Cache[K, V]) Get(key K) (v V, ok bool) {
 // Set
 func (c *Cache[K, V]) Set(key K, value V, ttl ...time.Duration) {
 	item := &cacheItem[V]{
-		value: value, ttl: NoTTL,
+		Value: value, Ttl: NoTTL,
 	}
 	// with ttl
 	if len(ttl) > 0 {
-		item.ttl = c.now() + int64(ttl[0])
+		item.Ttl = c.now() + int64(ttl[0])
 	}
 	c.m.Set(key, item)
 }
@@ -89,7 +89,7 @@ func (c *Cache[K, V]) MSet(values map[K]V, ttl ...time.Duration) {
 	// ttl
 	for k, v := range values {
 		items[k] = &cacheItem[V]{
-			value: v, ttl: _ttl,
+			Value: v, Ttl: _ttl,
 		}
 	}
 	c.m.MSet(items)
@@ -104,7 +104,7 @@ func (c *Cache[K, V]) Keys() []K {
 func (c *Cache[K, V]) SetTTL(key K, ttl time.Duration) bool {
 	item, ok := c.m.Get(key)
 	if ok {
-		item.ttl = c.now() + int64(ttl)
+		item.Ttl = c.now() + int64(ttl)
 		return true
 	}
 	return false
@@ -134,7 +134,7 @@ func (c *Cache[K, V]) Len() int {
 // Range
 func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 	for t := range c.m.IterBuffered() {
-		if f(t.Key, t.Val.value) {
+		if f(t.Key, t.Val.Value) {
 			break
 		}
 	}
@@ -143,7 +143,7 @@ func (c *Cache[K, V]) Range(f func(key K, value V) bool) {
 // RangeWithTTL
 func (c *Cache[K, V]) RangeWithTTL(f func(key K, value V, ttl int64) bool) {
 	for t := range c.m.IterBuffered() {
-		if f(t.Key, t.Val.value, t.Val.ttl) {
+		if f(t.Key, t.Val.Value, t.Val.Ttl) {
 			break
 		}
 	}
@@ -164,7 +164,7 @@ func (c *Cache[K, V]) eviction() {
 
 		for t := range c.m.IterBuffered() {
 			// clear expired keys
-			if t.Val.ttl < c.now() {
+			if t.Val.Ttl < c.now() {
 				// onExpired
 				if c.onExpired != nil {
 					c.m.RemoveCb(t.Key, c.onExpired)
@@ -174,6 +174,16 @@ func (c *Cache[K, V]) eviction() {
 			}
 		}
 	}
+}
+
+// Marshal
+func (c *Cache[K, V]) MarshalJSON() ([]byte, error) {
+	return c.m.MarshalJSON()
+}
+
+// Unmarshal
+func (c *Cache[K, V]) UnmarshalJSON(src []byte) error {
+	return c.m.UnmarshalJSON(src)
 }
 
 // Print
