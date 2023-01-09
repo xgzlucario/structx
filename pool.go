@@ -50,6 +50,11 @@ func (p *Pool) MaxGoroutines() int {
 	return cap(p.limiter)
 }
 
+// Len: Running tasks num
+func (p *Pool) Len() int32 {
+	return atomic.LoadInt32(p.len)
+}
+
 // WithMaxGoroutines
 func (p *Pool) WithMaxGoroutines(n int) *Pool {
 	if n < 1 {
