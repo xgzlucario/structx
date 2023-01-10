@@ -81,13 +81,13 @@ func (s *SignIn) Insert(userId uint, date time.Time) error {
 
 // UserCount: Get the number of days users have signed in
 // 用户签到总天数
-func (s *SignIn) UserCount(userId uint) (uint64, error) {
+func (s *SignIn) UserCount(userId uint) (int, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	bm, ok := s.userMap.Get(userID(userId))
 	if !ok {
-		return 0, errors.New("user not exist")
+		return 0, errors.New("userId not exist")
 	}
 
 	return bm.Len(), nil
@@ -107,12 +107,12 @@ func (s *SignIn) UserSignDates(userId uint, limits ...int) []time.Time {
 	// limit
 	var limit = bm.Len()
 	if len(limits) > 0 {
-		limit = uint64(limits[0])
+		limit = limits[0]
 	}
 
 	// parse timeSlice
 	times := make([]time.Time, 0, limit)
-	var count uint64
+	var count int
 
 	bm.RevRange(func(id uint) bool {
 		times = append(times, dateID(id).ToDate())
@@ -139,14 +139,14 @@ func (s *SignIn) UserRecentDate(userId uint) time.Time {
 
 // DateCount: Get the total number of sign-in for the day
 // 当日签到总量统计
-func (s *SignIn) DateCount(date time.Time) (uint64, error) {
+func (s *SignIn) DateCount(date time.Time) (int, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	id := s.parseDateID(date)
 	bm, ok := s.dateMap.Get(id)
 	if !ok {
-		return 0, errors.New("date not exist")
+		return -1, errors.New("date not exist")
 	}
 
 	return bm.Len(), nil

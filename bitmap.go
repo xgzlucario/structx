@@ -10,7 +10,7 @@ const bitSize = 64 // uint64 is 64 bit
 
 type BitMap struct {
 	words []uint64
-	len   uint64
+	len   int
 }
 
 // NewBitMap
@@ -195,7 +195,7 @@ func (bm *BitMap) Difference(target *BitMap, inplace ...bool) *BitMap {
 }
 
 // Len
-func (bm *BitMap) Len() uint64 {
+func (bm *BitMap) Len() int {
 	return bm.len
 }
 
@@ -246,12 +246,12 @@ func (bm *BitMap) RevRange(f func(uint) bool) {
 }
 
 // Marshal
-func (bm *BitMap) Marshal() ([]byte, error) {
-	return marshalJSON(append(bm.words, bm.len))
+func (bm *BitMap) MarshalJSON() ([]byte, error) {
+	return marshalJSON(append(bm.words, uint64(bm.len)))
 }
 
 // Unmarshal
-func (bm *BitMap) Unmarshal(src []byte) error {
+func (bm *BitMap) UnmarshalJSON(src []byte) error {
 	if err := unmarshalJSON(src, &bm.words); err != nil {
 		return err
 	}
@@ -260,7 +260,7 @@ func (bm *BitMap) Unmarshal(src []byte) error {
 	}
 
 	n := len(bm.words)
-	bm.len = bm.words[n-1]
+	bm.len = int(bm.words[n-1])
 	bm.words = bm.words[:n-1]
 	return nil
 }

@@ -102,6 +102,6 @@ func BenchmarkBmDifferenceInplace(b *testing.B) {
 func BenchmarkBmMarshal(b *testing.B) {
 	bm := getBitMap()
 	for i := 0; i < b.N; i++ {
-		bm.Marshal()
+		bm.MarshalJSON()
 	}
 }
